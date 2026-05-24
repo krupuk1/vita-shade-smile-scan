@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Camera, Activity, ListChecks, Sparkles, LogOut, Shield, Palette } from "lucide-react";
+import { LayoutDashboard, Camera, Activity, ListChecks, Sparkles, LogOut, Shield, Palette, User } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
@@ -21,6 +21,7 @@ export function AppSidebar() {
     { title: "Recommendations", url: "/recommendations", icon: Sparkles },
     { title: "Habit Tracker", url: "/habit-tracker", icon: ListChecks },
     { title: "VITA Shades", url: "/shades", icon: Palette },
+    { title: "Profile", url: "/profile", icon: User },
   ];
 
   async function handleSignOut() {

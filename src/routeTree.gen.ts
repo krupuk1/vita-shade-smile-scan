@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated.scan'
 import { Route as AuthenticatedRiskAnalysisRouteImport } from './routes/_authenticated.risk-analysis'
 import { Route as AuthenticatedRecommendationsRouteImport } from './routes/_authenticated.recommendations'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated.profile'
 import { Route as AuthenticatedHabitTrackerRouteImport } from './routes/_authenticated.habit-tracker'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
@@ -62,6 +63,11 @@ const AuthenticatedRecommendationsRoute =
     path: '/recommendations',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedHabitTrackerRoute =
   AuthenticatedHabitTrackerRouteImport.update({
     id: '/habit-tracker',
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/habit-tracker': typeof AuthenticatedHabitTrackerRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/scan': typeof AuthenticatedScanRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/habit-tracker': typeof AuthenticatedHabitTrackerRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/scan': typeof AuthenticatedScanRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/habit-tracker': typeof AuthenticatedHabitTrackerRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recommendations': typeof AuthenticatedRecommendationsRoute
   '/_authenticated/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/habit-tracker'
+    | '/profile'
     | '/recommendations'
     | '/risk-analysis'
     | '/scan'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/habit-tracker'
+    | '/profile'
     | '/recommendations'
     | '/risk-analysis'
     | '/scan'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/habit-tracker'
+    | '/_authenticated/profile'
     | '/_authenticated/recommendations'
     | '/_authenticated/risk-analysis'
     | '/_authenticated/scan'
@@ -223,6 +235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRecommendationsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/habit-tracker': {
       id: '/_authenticated/habit-tracker'
       path: '/habit-tracker'
@@ -251,6 +270,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedHabitTrackerRoute: typeof AuthenticatedHabitTrackerRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecommendationsRoute: typeof AuthenticatedRecommendationsRoute
   AuthenticatedRiskAnalysisRoute: typeof AuthenticatedRiskAnalysisRoute
   AuthenticatedScanRoute: typeof AuthenticatedScanRoute
@@ -260,6 +280,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedHabitTrackerRoute: AuthenticatedHabitTrackerRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecommendationsRoute: AuthenticatedRecommendationsRoute,
   AuthenticatedRiskAnalysisRoute: AuthenticatedRiskAnalysisRoute,
   AuthenticatedScanRoute: AuthenticatedScanRoute,
@@ -279,13 +300,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
