@@ -1,8 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export interface RiskItem { name: string; level: "low" | "medium" | "high"; score: number; reason: string; }
-export interface RiskAnalysis { risks: RiskItem[]; summary: string; }
+export interface RiskCriterion { label: string; score: number; weight: number; finding: string; }
+export interface RiskItem {
+  name: string;
+  level: "low" | "medium" | "high";
+  score: number;
+  reason: string;
+  factors: string[];
+  criteria: RiskCriterion[];
+  recommendation: string;
+}
+export interface RiskAnalysis {
+  risks: RiskItem[];
+  summary: string;
+  methodology: string;
+  overall_score: number;
+}
 export interface Recommendation { title: string; description: string; category: string; reason: string; }
 
 async function callAI(systemPrompt: string, userPrompt: string, toolName: string, schema: any) {
