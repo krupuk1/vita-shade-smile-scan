@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Shield, LayoutDashboard, Users, Camera, Sparkles, ArrowLeft, LogOut } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Camera, Sparkles, ArrowLeft, LogOut, FileText, Settings } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
@@ -14,11 +14,17 @@ export function AdminSidebar() {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
 
-  const items = [
+  const manage = [
     { title: "Overview", url: "/admin", icon: LayoutDashboard },
     { title: "Pengguna", url: "/admin/users", icon: Users },
+    { title: "Artikel", url: "/admin/articles", icon: FileText },
+  ];
+  const data = [
     { title: "Scan", url: "/admin/scans", icon: Camera },
     { title: "Rekomendasi AI", url: "/admin/recommendations", icon: Sparkles },
+  ];
+  const system = [
+    { title: "Settings", url: "/admin/settings", icon: Settings },
   ];
 
   async function handleSignOut() {
@@ -39,23 +45,29 @@ export function AdminSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Manajemen</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={path === item.url}>
-                    <Link to={item.url} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {[
+          { label: "Manajemen", items: manage },
+          { label: "Data", items: data },
+          { label: "Sistem", items: system },
+        ].map((grp) => (
+          <SidebarGroup key={grp.label}>
+            <SidebarGroupLabel>{grp.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {grp.items.map((item) => (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton asChild isActive={path === item.url}>
+                      <Link to={item.url} className="flex items-center gap-2">
+                        <item.icon className="h-4 w-4" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
 
         <SidebarGroup>
           <SidebarGroupLabel>Navigasi</SidebarGroupLabel>
