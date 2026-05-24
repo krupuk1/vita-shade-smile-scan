@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { Upload, Sparkles, Loader2, RotateCcw, Camera, ShieldCheck } from "lucide-react";
+import { Upload, Sparkles, Loader2, RotateCcw, Camera, ShieldCheck, Palette } from "lucide-react";
 import { analyzeTeeth, type ToothAnalysis } from "@/lib/analyze-teeth.functions";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
