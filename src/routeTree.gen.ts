@@ -9,12 +9,35 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ShadesRouteImport } from './routes/shades'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated.scan'
+import { Route as AuthenticatedRiskAnalysisRouteImport } from './routes/_authenticated.risk-analysis'
+import { Route as AuthenticatedRecommendationsRouteImport } from './routes/_authenticated.recommendations'
+import { Route as AuthenticatedHabitTrackerRouteImport } from './routes/_authenticated.habit-tracker'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShadesRoute = ShadesRouteImport.update({
   id: '/shades',
   path: '/shades',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,40 +45,154 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedScanRoute = AuthenticatedScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRiskAnalysisRoute =
+  AuthenticatedRiskAnalysisRouteImport.update({
+    id: '/risk-analysis',
+    path: '/risk-analysis',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedRecommendationsRoute =
+  AuthenticatedRecommendationsRouteImport.update({
+    id: '/recommendations',
+    path: '/recommendations',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedHabitTrackerRoute =
+  AuthenticatedHabitTrackerRouteImport.update({
+    id: '/habit-tracker',
+    path: '/habit-tracker',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/shades': typeof ShadesRoute
+  '/signup': typeof SignupRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/habit-tracker': typeof AuthenticatedHabitTrackerRoute
+  '/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
+  '/scan': typeof AuthenticatedScanRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/shades': typeof ShadesRoute
+  '/signup': typeof SignupRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/habit-tracker': typeof AuthenticatedHabitTrackerRoute
+  '/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
+  '/scan': typeof AuthenticatedScanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
   '/shades': typeof ShadesRoute
+  '/signup': typeof SignupRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/habit-tracker': typeof AuthenticatedHabitTrackerRoute
+  '/_authenticated/recommendations': typeof AuthenticatedRecommendationsRoute
+  '/_authenticated/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
+  '/_authenticated/scan': typeof AuthenticatedScanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/shades'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/shades'
+    | '/signup'
+    | '/admin'
+    | '/dashboard'
+    | '/habit-tracker'
+    | '/recommendations'
+    | '/risk-analysis'
+    | '/scan'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/shades'
-  id: '__root__' | '/' | '/shades'
+  to:
+    | '/'
+    | '/login'
+    | '/shades'
+    | '/signup'
+    | '/admin'
+    | '/dashboard'
+    | '/habit-tracker'
+    | '/recommendations'
+    | '/risk-analysis'
+    | '/scan'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/login'
+    | '/shades'
+    | '/signup'
+    | '/_authenticated/admin'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/habit-tracker'
+    | '/_authenticated/recommendations'
+    | '/_authenticated/risk-analysis'
+    | '/_authenticated/scan'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LoginRoute: typeof LoginRoute
   ShadesRoute: typeof ShadesRoute
+  SignupRoute: typeof SignupRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shades': {
       id: '/shades'
       path: '/shades'
       fullPath: '/shades'
       preLoaderRoute: typeof ShadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -65,12 +202,79 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/scan': {
+      id: '/_authenticated/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof AuthenticatedScanRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/risk-analysis': {
+      id: '/_authenticated/risk-analysis'
+      path: '/risk-analysis'
+      fullPath: '/risk-analysis'
+      preLoaderRoute: typeof AuthenticatedRiskAnalysisRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/recommendations': {
+      id: '/_authenticated/recommendations'
+      path: '/recommendations'
+      fullPath: '/recommendations'
+      preLoaderRoute: typeof AuthenticatedRecommendationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/habit-tracker': {
+      id: '/_authenticated/habit-tracker'
+      path: '/habit-tracker'
+      fullPath: '/habit-tracker'
+      preLoaderRoute: typeof AuthenticatedHabitTrackerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedHabitTrackerRoute: typeof AuthenticatedHabitTrackerRoute
+  AuthenticatedRecommendationsRoute: typeof AuthenticatedRecommendationsRoute
+  AuthenticatedRiskAnalysisRoute: typeof AuthenticatedRiskAnalysisRoute
+  AuthenticatedScanRoute: typeof AuthenticatedScanRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedHabitTrackerRoute: AuthenticatedHabitTrackerRoute,
+  AuthenticatedRecommendationsRoute: AuthenticatedRecommendationsRoute,
+  AuthenticatedRiskAnalysisRoute: AuthenticatedRiskAnalysisRoute,
+  AuthenticatedScanRoute: AuthenticatedScanRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
   ShadesRoute: ShadesRoute,
+  SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
