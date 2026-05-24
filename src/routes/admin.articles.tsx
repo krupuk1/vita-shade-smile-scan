@@ -5,7 +5,7 @@ import { FileText, Plus, Edit2, Trash2, Eye, EyeOff, X, Loader2 } from "lucide-r
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_admin/articles")({
+export const Route = createFileRoute("/admin/articles")({
   component: AdminArticles,
   head: () => ({ meta: [{ title: "Artikel — Admin Tintify" }] }),
 });

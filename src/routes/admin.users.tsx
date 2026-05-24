@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_admin/users")({
+export const Route = createFileRoute("/admin/users")({
   component: AdminUsers,
   head: () => ({ meta: [{ title: "Admin · Pengguna — Tintify" }] }),
 });

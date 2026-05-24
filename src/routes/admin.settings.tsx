@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 
-export const Route = createFileRoute("/_admin/settings")({
+export const Route = createFileRoute("/admin/settings")({
   component: AdminSettings,
   head: () => ({ meta: [{ title: "Settings — Admin Tintify" }] }),
 });

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_admin/scans")({
+export const Route = createFileRoute("/admin/scans")({
   component: AdminScans,
   head: () => ({ meta: [{ title: "Admin · Scan — Tintify" }] }),
 });
