@@ -80,6 +80,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Pemindai warna gigi cerdas berbasis AI dengan analisis risiko dan rekomendasi personal." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Tintify — Tooth Color Intelligence Platform" },
+      { name: "twitter:description", content: "Pemindai warna gigi cerdas berbasis AI dengan analisis risiko dan rekomendasi personal." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/588bc298-f913-440d-8ff0-eae4889955f7/id-preview-8669c35e--b8cc8c83-5341-4134-8cb4-5aef53032bce.lovable.app-1779624873085.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/588bc298-f913-440d-8ff0-eae4889955f7/id-preview-8669c35e--b8cc8c83-5341-4134-8cb4-5aef53032bce.lovable.app-1779624873085.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
