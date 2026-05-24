@@ -79,7 +79,7 @@ Jika gambar BUKAN gigi atau tidak bisa dianalisis, set confidence=0 dan summary 
                 type: "object",
                 properties: {
                   primaryShade: { type: "string", enum: VITA_SHADES },
-                  secondaryShade: { type: ["string", "null"], enum: [...VITA_SHADES, null] },
+                  secondaryShade: { type: "string", description: "VITA shade alternatif, atau string kosong jika tidak ada" },
                   brightness: {
                     type: "string",
                     enum: ["very-light", "light", "medium", "dark"],
