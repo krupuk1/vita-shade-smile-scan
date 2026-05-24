@@ -79,20 +79,31 @@ function HabitPage() {
     return arr.map((l: any) => ({ date: new Date(l.log_date).toLocaleDateString("id-ID", { weekday: "short" }), cups: l.coffee_cups ?? 0 }));
   }, [logs]);
 
-  // Heatmap (last 30 days)
+  // Heatmap (last ~30 days, aligned by weekday columns Mon..Sun)
   const heatmap = useMemo(() => {
     const map = new Map<string, number>();
     (logs ?? []).forEach((l: any) => {
       const s = (l.brushing_morning ? 1 : 0) + (l.brushing_night ? 1 : 0) + (l.flossing ? 1 : 0) + (l.mouthwash ? 1 : 0);
       map.set(l.log_date, s);
     });
-    const cells: { date: string; score: number }[] = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate() - i);
-      const key = d.toISOString().split("T")[0];
-      cells.push({ date: key, score: map.get(key) ?? 0 });
+    // Build grid: start from Monday of (today - 4 weeks), 5 weeks * 7 days = 35 cells
+    const today = new Date();
+    const dow = (today.getDay() + 6) % 7; // 0 = Mon
+    const start = new Date(today);
+    start.setDate(today.getDate() - dow - 28); // 4 weeks back to Monday
+    const weeks: { date: string; score: number; isFuture: boolean }[][] = [];
+    for (let w = 0; w < 5; w++) {
+      const row: { date: string; score: number; isFuture: boolean }[] = [];
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(start);
+        day.setDate(start.getDate() + w * 7 + d);
+        const key = day.toISOString().split("T")[0];
+        const isFuture = day > today;
+        row.push({ date: key, score: map.get(key) ?? 0, isFuture });
+      }
+      weeks.push(row);
     }
-    return cells;
+    return weeks;
   }, [logs]);
 
   return (
@@ -163,17 +174,33 @@ function HabitPage() {
               <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">📅 Activity Heatmap</h2>
               <span className="text-xs text-muted-foreground">30 hari terakhir</span>
             </div>
-            <div className="mt-4 grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1.5">
-              {heatmap.map((c) => (
-                <div key={c.date} title={`${c.date}: ${c.score}/4`}
-                  className="aspect-square rounded-[4px]"
-                  style={{
-                    background: c.score === 0 ? "hsl(var(--secondary))" :
-                      c.score === 1 ? "rgb(187 247 208)" :
-                      c.score === 2 ? "rgb(134 239 172)" :
-                      c.score === 3 ? "rgb(74 222 128)" : "rgb(34 197 94)",
-                  }} />
-              ))}
+            <div className="mt-4">
+              <div className="grid grid-cols-7 gap-1.5 pb-1.5 text-[10px] text-muted-foreground">
+                {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((d) => (
+                  <div key={d} className="text-center">{d}</div>
+                ))}
+              </div>
+              <div className="space-y-1.5">
+                {heatmap.map((week, wi) => (
+                  <div key={wi} className="grid grid-cols-7 gap-1.5">
+                    {week.map((c) => (
+                      <div
+                        key={c.date}
+                        title={c.isFuture ? c.date : `${c.date}: ${c.score}/4`}
+                        className="aspect-square rounded-[4px]"
+                        style={{
+                          background: c.isFuture ? "transparent" :
+                            c.score === 0 ? "hsl(var(--secondary))" :
+                            c.score === 1 ? "rgb(187 247 208)" :
+                            c.score === 2 ? "rgb(134 239 172)" :
+                            c.score === 3 ? "rgb(74 222 128)" : "rgb(34 197 94)",
+                          border: c.isFuture ? "1px dashed hsl(var(--border))" : "none",
+                        }}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
             <div className="mt-3 flex items-center justify-end gap-1 text-[10px] text-muted-foreground">
               <span>Less</span>

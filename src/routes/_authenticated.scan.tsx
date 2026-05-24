@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState, useEffect } from "react";
-import { Upload, Sparkles, Loader2, RotateCcw, Camera, ShieldCheck, Hand, FileImage, Video } from "lucide-react";
+import { Upload, Sparkles, Loader2, RotateCcw, Camera, ShieldCheck, Hand, FileImage, Video, ListChecks, Activity } from "lucide-react";
 import { analyzeTeeth, saveScan, type ToothAnalysis } from "@/lib/analyze-teeth.functions";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -190,6 +190,15 @@ function ResultPanel({ result }: { result: ToothAnalysis }) {
       {low && <p className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">Confidence rendah — coba foto ulang dengan pencahayaan lebih terang.</p>}
       <Section title="Observasi" items={result.observations} />
       <Section title="Rekomendasi" items={result.recommendations} accent />
+
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <Link to="/habit-tracker" className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90" style={{ background: "var(--gradient-primary)" }}>
+          <ListChecks className="h-4 w-4" /> Catat Habit Hari Ini
+        </Link>
+        <Link to="/risk-analysis" className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/5 px-4 py-3 text-sm font-medium text-primary transition hover:bg-primary/10">
+          <Activity className="h-4 w-4" /> Lihat Risk Analysis
+        </Link>
+      </div>
     </div>
   );
 }
