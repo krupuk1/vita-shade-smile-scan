@@ -12,19 +12,21 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ShadesRouteImport } from './routes/shades'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminScansRouteImport } from './routes/admin.scans'
+import { Route as AdminRecommendationsRouteImport } from './routes/admin.recommendations'
+import { Route as AdminArticlesRouteImport } from './routes/admin.articles'
 import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated.scan'
 import { Route as AuthenticatedRiskAnalysisRouteImport } from './routes/_authenticated.risk-analysis'
 import { Route as AuthenticatedRecommendationsRouteImport } from './routes/_authenticated.recommendations'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated.profile'
 import { Route as AuthenticatedHabitTrackerRouteImport } from './routes/_authenticated.habit-tracker'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
-import { Route as AdminIndexRouteImport } from './routes/_admin.index'
-import { Route as AdminUsersRouteImport } from './routes/_admin.users'
-import { Route as AdminScansRouteImport } from './routes/_admin.scans'
-import { Route as AdminRecommendationsRouteImport } from './routes/_admin.recommendations'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -41,18 +43,49 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/_admin',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminScansRoute = AdminScansRouteImport.update({
+  id: '/scans',
+  path: '/scans',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRecommendationsRoute = AdminRecommendationsRouteImport.update({
+  id: '/recommendations',
+  path: '/recommendations',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminArticlesRoute = AdminArticlesRouteImport.update({
+  id: '/articles',
+  path: '/articles',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AuthenticatedScanRoute = AuthenticatedScanRouteImport.update({
   id: '/scan',
@@ -87,135 +120,129 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/',
-  path: '/admin',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/admin/users',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminScansRoute = AdminScansRouteImport.update({
-  id: '/scans',
-  path: '/admin/scans',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminRecommendationsRoute = AdminRecommendationsRouteImport.update({
-  id: '/recommendations',
-  path: '/admin/recommendations',
-  getParentRoute: () => AdminRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/shades': typeof ShadesRoute
   '/signup': typeof SignupRoute
-  '/admin': typeof AdminIndexRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/admin/scans': typeof AdminScansRoute
-  '/admin/recommendations': typeof AdminRecommendationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/habit-tracker': typeof AuthenticatedHabitTrackerRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/scan': typeof AuthenticatedScanRoute
+  '/admin/articles': typeof AdminArticlesRoute
+  '/admin/recommendations': typeof AdminRecommendationsRoute
+  '/admin/scans': typeof AdminScansRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/shades': typeof ShadesRoute
   '/signup': typeof SignupRoute
-  '/admin': typeof AdminIndexRoute
-  '/admin/users': typeof AdminUsersRoute
-  '/admin/scans': typeof AdminScansRoute
-  '/admin/recommendations': typeof AdminRecommendationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/habit-tracker': typeof AuthenticatedHabitTrackerRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/scan': typeof AuthenticatedScanRoute
+  '/admin/articles': typeof AdminArticlesRoute
+  '/admin/recommendations': typeof AdminRecommendationsRoute
+  '/admin/scans': typeof AdminScansRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_admin': typeof AdminRouteWithChildren
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/shades': typeof ShadesRoute
   '/signup': typeof SignupRoute
-  '/_admin/': typeof AdminIndexRoute
-  '/_admin/users': typeof AdminUsersRoute
-  '/_admin/scans': typeof AdminScansRoute
-  '/_admin/recommendations': typeof AdminRecommendationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/habit-tracker': typeof AuthenticatedHabitTrackerRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recommendations': typeof AuthenticatedRecommendationsRoute
   '/_authenticated/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
+  '/admin/articles': typeof AdminArticlesRoute
+  '/admin/recommendations': typeof AdminRecommendationsRoute
+  '/admin/scans': typeof AdminScansRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/login'
     | '/shades'
     | '/signup'
-    | '/admin'
-    | '/admin/users'
-    | '/admin/scans'
-    | '/admin/recommendations'
     | '/dashboard'
     | '/habit-tracker'
     | '/profile'
     | '/recommendations'
     | '/risk-analysis'
     | '/scan'
+    | '/admin/articles'
+    | '/admin/recommendations'
+    | '/admin/scans'
+    | '/admin/settings'
+    | '/admin/users'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/shades'
     | '/signup'
-    | '/admin'
-    | '/admin/users'
-    | '/admin/scans'
-    | '/admin/recommendations'
     | '/dashboard'
     | '/habit-tracker'
     | '/profile'
     | '/recommendations'
     | '/risk-analysis'
     | '/scan'
+    | '/admin/articles'
+    | '/admin/recommendations'
+    | '/admin/scans'
+    | '/admin/settings'
+    | '/admin/users'
+    | '/admin'
   id:
     | '__root__'
     | '/'
-    | '/_admin'
     | '/_authenticated'
+    | '/admin'
     | '/login'
     | '/shades'
     | '/signup'
-    | '/_admin/'
-    | '/_admin/users'
-    | '/_admin/scans'
-    | '/_admin/recommendations'
     | '/_authenticated/dashboard'
     | '/_authenticated/habit-tracker'
     | '/_authenticated/profile'
     | '/_authenticated/recommendations'
     | '/_authenticated/risk-analysis'
     | '/_authenticated/scan'
+    | '/admin/articles'
+    | '/admin/recommendations'
+    | '/admin/scans'
+    | '/admin/settings'
+    | '/admin/users'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRouteWithChildren
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
   ShadesRoute: typeof ShadesRoute
   SignupRoute: typeof SignupRoute
@@ -244,18 +271,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_admin': {
-      id: '/_admin'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -264,6 +291,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/scans': {
+      id: '/admin/scans'
+      path: '/scans'
+      fullPath: '/admin/scans'
+      preLoaderRoute: typeof AdminScansRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/recommendations': {
+      id: '/admin/recommendations'
+      path: '/recommendations'
+      fullPath: '/admin/recommendations'
+      preLoaderRoute: typeof AdminRecommendationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/articles': {
+      id: '/admin/articles'
+      path: '/articles'
+      fullPath: '/admin/articles'
+      preLoaderRoute: typeof AdminArticlesRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/_authenticated/scan': {
       id: '/_authenticated/scan'
@@ -307,34 +376,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_admin/': {
-      id: '/_admin/'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/users': {
-      id: '/_admin/users'
-      path: '/admin/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/scans': {
-      id: '/_admin/scans'
-      path: '/admin/scans'
-      fullPath: '/admin/scans'
-      preLoaderRoute: typeof AdminScansRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/recommendations': {
-      id: '/_admin/recommendations'
-      path: '/admin/recommendations'
-      fullPath: '/admin/recommendations'
-      preLoaderRoute: typeof AdminRecommendationsRouteImport
-      parentRoute: typeof AdminRoute
-    }
   }
 }
 
@@ -361,25 +402,29 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 interface AdminRouteChildren {
-  AdminIndexRoute: typeof AdminIndexRoute
-  AdminUsersRoute: typeof AdminUsersRoute
-  AdminScansRoute: typeof AdminScansRoute
+  AdminArticlesRoute: typeof AdminArticlesRoute
   AdminRecommendationsRoute: typeof AdminRecommendationsRoute
+  AdminScansRoute: typeof AdminScansRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminIndexRoute: AdminIndexRoute,
-  AdminUsersRoute: AdminUsersRoute,
-  AdminScansRoute: AdminScansRoute,
+  AdminArticlesRoute: AdminArticlesRoute,
   AdminRecommendationsRoute: AdminRecommendationsRoute,
+  AdminScansRoute: AdminScansRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRouteWithChildren,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
   ShadesRoute: ShadesRoute,
   SignupRoute: SignupRoute,
@@ -387,3 +432,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
