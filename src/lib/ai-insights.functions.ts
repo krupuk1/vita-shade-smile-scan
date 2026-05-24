@@ -139,8 +139,8 @@ export const generateRecommendations = createServerFn({ method: "POST" })
     const summary = `Scan terakhir: ${(scans ?? []).map((s: any) => s.primary_shade).join(", ") || "—"}.\n\nHabit 7 hari terakhir:\n${habitLines}`;
 
     const result = (await callAI(
-      "Anda asisten perawatan gigi. Beri rekomendasi personal yang spesifik & actionable, dengan prioritas, langkah aksi, dan target terukur. Bahasa Indonesia.",
-      `Beri 4-6 rekomendasi personal berdasarkan data:\n${summary}\n\nUntuk SETIAP rekomendasi sertakan:\n- title singkat\n- description 1-2 kalimat\n- category: oral_care | lifestyle | professional | diet | whitening\n- priority: critical | high | moderate | low\n- reason: kenapa AI menyarankan ini\n- current: kondisi saat ini (singkat, mis. "5 cangkir/hari")\n- target: target yang diinginkan (singkat)\n- difficulty: 1-4\n- steps: 3 langkah aksi konkret`,
+      "Anda asisten perawatan gigi. Beri rekomendasi personal yang spesifik & actionable, dengan prioritas, langkah aksi, dan target terukur. PENTING: Baca data habit dengan seksama. Jangan menyarankan kebiasaan yang sudah konsisten dilakukan user (mis. jika sikat_malam=YA setiap hari, JANGAN menyarankan 'mulai sikat gigi malam'). Fokus pada area yang masih kurang. Bahasa Indonesia.",
+      `Beri 4-6 rekomendasi personal berdasarkan data berikut. Cek kolom YA/TIDAK secara teliti sebelum memberi saran.\n\n${summary}\n\nUntuk SETIAP rekomendasi sertakan:\n- title singkat\n- description 1-2 kalimat\n- category: oral_care | lifestyle | professional | diet | whitening\n- priority: critical | high | moderate | low\n- reason: kenapa AI menyarankan ini (kutip data spesifik)\n- current: kondisi saat ini (singkat, mis. "5 cangkir/hari")\n- target: target yang diinginkan (singkat)\n- difficulty: 1-4\n- steps: 3 langkah aksi konkret`,
       "report_recommendations",
       {
         type: "object",
