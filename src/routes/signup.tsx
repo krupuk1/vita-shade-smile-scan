@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
-import { Sparkles, Loader2 } from "lucide-react";
+import { useState, useMemo, type FormEvent } from "react";
+import { Sparkles, Loader2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,18 +15,36 @@ function SignupPage() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [gender, setGender] = useState("");
+  const [age, setAge] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const checks = useMemo(() => ({
+    length: password.length >= 8,
+    upper: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+    symbol: /[^A-Za-z0-9]/.test(password),
+  }), [password]);
+  const allValid = Object.values(checks).every(Boolean);
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (!allValid) {
+      toast.error("Password belum memenuhi syarat.");
+      return;
+    }
+    if (!gender) return toast.error("Pilih jenis kelamin.");
+    const ageNum = Number(age);
+    if (!ageNum || ageNum < 5 || ageNum > 120) return toast.error("Masukkan usia yang valid (5–120).");
+
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { display_name: name },
+        data: { display_name: name, gender, age: String(ageNum) },
       },
     });
     setLoading(false);
@@ -64,7 +82,27 @@ function SignupPage() {
         <form onSubmit={handleSubmit} className="space-y-3">
           <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama lengkap" className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
           <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
-          <input required type="password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password (min 6 karakter)" className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+
+          <div className="grid grid-cols-2 gap-3">
+            <select required value={gender} onChange={(e) => setGender(e.target.value)} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary">
+              <option value="" disabled>Jenis kelamin</option>
+              <option value="laki-laki">Laki-laki</option>
+              <option value="perempuan">Perempuan</option>
+              <option value="lainnya">Lainnya</option>
+            </select>
+            <input required type="number" min={5} max={120} value={age} onChange={(e) => setAge(e.target.value)} placeholder="Usia" className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+          </div>
+
+          <div>
+            <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+            <ul className="mt-2 space-y-1 text-[11px]">
+              <Check label="Minimal 8 karakter" ok={checks.length} />
+              <Check label="Mengandung huruf besar (A-Z)" ok={checks.upper} />
+              <Check label="Mengandung angka (0-9)" ok={checks.number} />
+              <Check label="Mengandung simbol (!@#$...)" ok={checks.symbol} />
+            </ul>
+          </div>
+
           <button disabled={loading} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60" style={{ background: "var(--gradient-primary)" }}>
             {loading && <Loader2 className="h-4 w-4 animate-spin" />} Buat akun
           </button>
@@ -77,6 +115,19 @@ function SignupPage() {
     </main>
   );
 }
+
+function Check({ label, ok }: { label: string; ok: boolean }) {
+  const Icon = ok ? CheckIcon : XIcon;
+  return (
+    <li className={`flex items-center gap-1.5 ${ok ? "text-emerald-600" : "text-muted-foreground"}`}>
+      <Icon /> {label}
+    </li>
+  );
+}
+function CheckIcon() { return <Check2 />; }
+function XIcon() { return <X2 />; }
+function Check2() { return <Check className="h-3 w-3" />; }
+function X2() { return <X className="h-3 w-3" />; }
 
 function GoogleIcon() {
   return (
