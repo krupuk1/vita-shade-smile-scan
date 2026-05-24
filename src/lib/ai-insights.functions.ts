@@ -17,7 +17,17 @@ export interface RiskAnalysis {
   methodology: string;
   overall_score: number;
 }
-export interface Recommendation { title: string; description: string; category: string; reason: string; }
+export interface Recommendation {
+  title: string;
+  description: string;
+  category: string;
+  reason: string;
+  priority: "critical" | "high" | "moderate" | "low";
+  current: string;
+  target: string;
+  difficulty: number;
+  steps: string[];
+}
 
 async function callAI(systemPrompt: string, userPrompt: string, toolName: string, schema: any) {
   const apiKey = process.env.LOVABLE_API_KEY;
