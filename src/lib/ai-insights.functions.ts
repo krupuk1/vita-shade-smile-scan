@@ -1,207 +1,114 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+export interface RiskItem { name: string; level: "low" | "medium" | "high"; score: number; reason: string; }
+export interface RiskAnalysis { risks: RiskItem[]; summary: string; }
+export interface Recommendation { title: string; description: string; category: string; reason: string; }
 
-async function callAI(systemPrompt: string, userPrompt: string, schema: object, toolName: string) {
+async function callAI(systemPrompt: string, userPrompt: string, toolName: string, schema: any) {
   const apiKey = process.env.LOVABLE_API_KEY;
   if (!apiKey) throw new Error("LOVABLE_API_KEY belum terkonfigurasi");
-
-  const res = await fetch(LOVABLE_AI_URL, {
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "google/gemini-2.5-flash",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      tools: [
-        {
-          type: "function",
-          function: {
-            name: toolName,
-            description: "Return structured analysis",
-            parameters: schema,
-          },
-        },
-      ],
+      tools: [{ type: "function", function: { name: toolName, description: "Laporkan hasil", parameters: schema } }],
       tool_choice: { type: "function", function: { name: toolName } },
     }),
   });
-
   if (!res.ok) {
-    const text = await res.text();
-    if (res.status === 429) throw new Error("Rate limit AI. Coba lagi sebentar.");
-    if (res.status === 402) throw new Error("Kredit AI habis. Tambahkan di Workspace.");
-    console.error("AI gateway error", res.status, text);
-    throw new Error("AI gagal merespons.");
+    if (res.status === 429) throw new Error("Rate limit. Coba lagi sebentar.");
+    if (res.status === 402) throw new Error("Kredit AI habis.");
+    throw new Error("AI gateway error");
   }
-
   const json = await res.json();
-  const toolCall = json.choices?.[0]?.message?.tool_calls?.[0];
-  if (!toolCall?.function?.arguments) throw new Error("Respons AI tidak valid.");
-  return JSON.parse(toolCall.function.arguments);
-}
-
-export interface RiskAnalysis {
-  overallRisk: "low" | "moderate" | "high";
-  summary: string;
-  highImpactFactors: { name: string; icon: string; current: string; explanation: string }[];
-  moderateImpactFactors: { name: string; icon: string; current: string; explanation: string }[];
-  protectiveFactors: { name: string; icon: string; current: string }[];
+  const args = json.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+  if (!args) throw new Error("Respons AI tidak valid");
+  return JSON.parse(args);
 }
 
 export const generateRiskAnalysis = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { currentShade?: string; recentHabits?: Record<string, unknown> }) => d)
-  .handler(async ({ data }) => {
-    const system = `Anda adalah asisten kesehatan gigi yang menganalisis risiko diskolorasi gigi berdasarkan shade VITA saat ini dan kebiasaan pengguna. Berikan output dalam Bahasa Indonesia.`;
-    const user = `Shade VITA saat ini: ${data.currentShade ?? "belum ada"}.
-Kebiasaan terkini (rata-rata 7 hari): ${JSON.stringify(data.recentHabits ?? {})}.
-Analisis risiko diskolorasi. Tentukan tingkat risiko (low/moderate/high), ringkasan 1-2 kalimat, faktor berdampak tinggi (kopi, rokok, dll dengan nilai user), faktor berdampak sedang (teh, anggur, dll), dan faktor pelindung (sikat gigi, flossing, air, dll). Untuk icon, gunakan emoji yang relevan (☕ kopi, 🚬 rokok, 🍵 teh, 🪥 sikat gigi, 🧵 flossing, 💧 air, dll).`;
+  .handler(async ({ context }) => {
+    const { supabase } = context;
+    const [{ data: scans }, { data: habits }] = await Promise.all([
+      supabase.from("tooth_scans").select("*").order("created_at", { ascending: false }).limit(10),
+      supabase.from("habit_logs").select("*").order("log_date", { ascending: false }).limit(14),
+    ]);
 
-    const schema = {
-      type: "object",
-      properties: {
-        overallRisk: { type: "string", enum: ["low", "moderate", "high"] },
-        summary: { type: "string" },
-        highImpactFactors: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              name: { type: "string" },
-              icon: { type: "string" },
-              current: { type: "string" },
-              explanation: { type: "string" },
-            },
-            required: ["name", "icon", "current", "explanation"],
-          },
-        },
-        moderateImpactFactors: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              name: { type: "string" },
-              icon: { type: "string" },
-              current: { type: "string" },
-              explanation: { type: "string" },
-            },
-            required: ["name", "icon", "current", "explanation"],
-          },
-        },
-        protectiveFactors: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              name: { type: "string" },
-              icon: { type: "string" },
-              current: { type: "string" },
-            },
-            required: ["name", "icon", "current"],
-          },
-        },
-      },
-      required: ["overallRisk", "summary", "highImpactFactors", "moderateImpactFactors", "protectiveFactors"],
-    };
+    const summary = `Scan terakhir: ${(scans ?? []).map((s: any) => `${s.primary_shade}(${s.hygiene_score ?? "?"})`).join(", ") || "belum ada"}.
+Habit 14 hari: ${(habits ?? []).map((h: any) => `${h.log_date}: brush=${(h.brushing_morning ? 1 : 0) + (h.brushing_night ? 1 : 0)}/2, floss=${h.flossing}, kopi=${h.coffee_cups}, rokok=${h.cigarettes}`).join("; ") || "belum ada"}.`;
 
-    return (await callAI(system, user, schema, "report_risk_analysis")) as RiskAnalysis;
+    return (await callAI(
+      "Anda adalah asisten kesehatan gigi. Analisis risiko berbasis data scan & habit user. Jawab dalam Bahasa Indonesia.",
+      `Berdasarkan data berikut, identifikasi 3-5 risiko utama (karies, plak/tartar, stain, gum disease, enamel erosion) dengan skor 0-100 dan level (low/medium/high). Sertakan summary 2-3 kalimat.\n\nData:\n${summary}`,
+      "report_risk",
+      {
+        type: "object",
+        properties: {
+          risks: {
+            type: "array", minItems: 3, maxItems: 5,
+            items: { type: "object", properties: {
+              name: { type: "string" }, level: { type: "string", enum: ["low", "medium", "high"] },
+              score: { type: "number", minimum: 0, maximum: 100 }, reason: { type: "string" }
+            }, required: ["name", "level", "score", "reason"] }
+          },
+          summary: { type: "string" }
+        },
+        required: ["risks", "summary"]
+      }
+    )) as RiskAnalysis;
   });
-
-export interface RecommendationsResult {
-  priorityActions: {
-    title: string;
-    icon: string;
-    severity: "critical" | "high" | "moderate";
-    current: string;
-    target: string;
-    difficulty: number;
-    progressNote: string;
-    actionSteps: string[];
-  }[];
-  professionalRecs: string[];
-  dailyTip: string;
-  educational: { title: string; type: "article" | "video"; duration: string }[];
-}
 
 export const generateRecommendations = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { currentShade?: string; recentHabits?: Record<string, unknown> }) => d)
-  .handler(async ({ data }) => {
-    const system = `Anda adalah asisten gigi yang membuat rencana aksi prioritas personal untuk memutihkan/menjaga warna gigi. Berikan output dalam Bahasa Indonesia.`;
-    const user = `Shade VITA saat ini: ${data.currentShade ?? "belum ada"}.
-Kebiasaan terkini: ${JSON.stringify(data.recentHabits ?? {})}.
-Buat 3-5 rekomendasi prioritas (urutkan dari paling kritis). Setiap rekomendasi: title, icon (emoji), severity, current value, target value, difficulty (1-4), progress note, 3 action steps. Plus 2-3 rekomendasi profesional (mis. dental cleaning), 1 daily tip, dan 2-3 resource edukatif.`;
+  .handler(async ({ context }) => {
+    const { supabase } = context;
+    const [{ data: scans }, { data: habits }] = await Promise.all([
+      supabase.from("tooth_scans").select("*").order("created_at", { ascending: false }).limit(5),
+      supabase.from("habit_logs").select("*").order("log_date", { ascending: false }).limit(7),
+    ]);
+    const summary = `Scan: ${(scans ?? []).map((s: any) => s.primary_shade).join(", ") || "—"}. Habit 7 hari: ${JSON.stringify(habits ?? []).slice(0, 800)}`;
 
-    const schema = {
-      type: "object",
-      properties: {
-        priorityActions: {
-          type: "array",
+    return (await callAI(
+      "Anda asisten perawatan gigi. Beri rekomendasi personal yang spesifik & actionable. Bahasa Indonesia.",
+      `Beri 4-6 rekomendasi personal berdasarkan data:\n${summary}\n\nKategori: oral_care, lifestyle, professional, diet, whitening.`,
+      "report_recommendations",
+      {
+        type: "object",
+        properties: {
           items: {
-            type: "object",
-            properties: {
-              title: { type: "string" },
-              icon: { type: "string" },
-              severity: { type: "string", enum: ["critical", "high", "moderate"] },
-              current: { type: "string" },
-              target: { type: "string" },
-              difficulty: { type: "number", minimum: 1, maximum: 4 },
-              progressNote: { type: "string" },
-              actionSteps: { type: "array", items: { type: "string" }, minItems: 2, maxItems: 4 },
-            },
-            required: ["title", "icon", "severity", "current", "target", "difficulty", "progressNote", "actionSteps"],
-          },
-        },
-        professionalRecs: { type: "array", items: { type: "string" } },
-        dailyTip: { type: "string" },
-        educational: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              title: { type: "string" },
-              type: { type: "string", enum: ["article", "video"] },
-              duration: { type: "string" },
-            },
-            required: ["title", "type", "duration"],
-          },
-        },
-      },
-      required: ["priorityActions", "professionalRecs", "dailyTip", "educational"],
-    };
-
-    return (await callAI(system, user, schema, "report_recommendations")) as RecommendationsResult;
+            type: "array", minItems: 4, maxItems: 6,
+            items: { type: "object", properties: {
+              title: { type: "string" }, description: { type: "string" },
+              category: { type: "string" }, reason: { type: "string" }
+            }, required: ["title", "description", "category", "reason"] }
+          }
+        }, required: ["items"]
+      }
+    )) as { items: Recommendation[] };
   });
-
-export interface HabitInsights {
-  encouragement: string;
-  dailyTip: string;
-  riskAlert: string | null;
-}
 
 export const generateHabitInsights = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { recentHabits?: Record<string, unknown> }) => d)
-  .handler(async ({ data }) => {
-    const system = "Asisten gigi memberikan motivasi singkat berdasarkan kebiasaan 7 hari. Output Bahasa Indonesia.";
-    const user = `Kebiasaan 7 hari terakhir: ${JSON.stringify(data.recentHabits ?? {})}. Buat encouragement 1 kalimat, daily tip praktis 1 kalimat, dan risk alert 1 kalimat (null jika tidak ada risiko mencolok).`;
-    const schema = {
-      type: "object",
-      properties: {
-        encouragement: { type: "string" },
-        dailyTip: { type: "string" },
-        riskAlert: { type: "string" },
-      },
-      required: ["encouragement", "dailyTip", "riskAlert"],
-    };
-    const r = (await callAI(system, user, schema, "report_habit_insights")) as HabitInsights;
-    if (r.riskAlert && r.riskAlert.trim().toLowerCase() === "null") r.riskAlert = null;
-    return r;
+  .handler(async ({ context }) => {
+    const { supabase } = context;
+    const { data: habits } = await supabase.from("habit_logs").select("*").order("log_date", { ascending: false }).limit(7);
+    const summary = JSON.stringify(habits ?? []).slice(0, 1000);
+
+    return (await callAI(
+      "Anda asisten kesehatan gigi. Analisis pola habit & beri insight singkat actionable. Bahasa Indonesia.",
+      `Data habit 7 hari:\n${summary}\n\nBeri insight 3-5 kalimat: pola yang baik, area yang perlu perbaikan, saran konkret.`,
+      "report_insight",
+      {
+        type: "object",
+        properties: { insight: { type: "string" } },
+        required: ["insight"]
+      }
+    )) as { insight: string };
   });
