@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo, type FormEvent } from "react";
-import { Sparkles, Loader2, Check, X } from "lucide-react";
+import { Sparkles, Loader2, Check as CheckIc, X as XIc } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -117,17 +117,12 @@ function SignupPage() {
 }
 
 function Check({ label, ok }: { label: string; ok: boolean }) {
-  const Icon = ok ? CheckIcon : XIcon;
   return (
     <li className={`flex items-center gap-1.5 ${ok ? "text-emerald-600" : "text-muted-foreground"}`}>
-      <Icon /> {label}
+      {ok ? <CheckIc className="h-3 w-3" /> : <XIc className="h-3 w-3" />} {label}
     </li>
   );
 }
-function CheckIcon() { return <Check2 />; }
-function XIcon() { return <X2 />; }
-function Check2() { return <Check className="h-3 w-3" />; }
-function X2() { return <X className="h-3 w-3" />; }
 
 function GoogleIcon() {
   return (
