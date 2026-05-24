@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { ListChecks, Loader2, Sparkles } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Loader2, Sparkles, Save, Sun, Moon, Droplet, Coffee, Cigarette, Trophy, Award, Crown, Star, Lock } from "lucide-react";
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { generateHabitInsights } from "@/lib/ai-insights.functions";
@@ -27,11 +28,21 @@ function HabitPage() {
   const { data: logs } = useQuery({
     queryKey: ["habit-logs", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("habit_logs").select("*").order("log_date", { ascending: false }).limit(7);
+      const { data } = await supabase.from("habit_logs").select("*").order("log_date", { ascending: false }).limit(30);
       return data ?? [];
     },
     enabled: !!user,
   });
+
+  // Preload today's log
+  useEffect(() => {
+    const t = logs?.find((l: any) => l.log_date === today);
+    if (t) setForm({
+      brushing_morning: !!t.brushing_morning, brushing_night: !!t.brushing_night,
+      flossing: !!t.flossing, mouthwash: !!t.mouthwash,
+      coffee_cups: t.coffee_cups ?? 0, tea_cups: t.tea_cups ?? 0, cigarettes: t.cigarettes ?? 0,
+    });
+  }, [logs, today]);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -46,54 +57,146 @@ function HabitPage() {
 
   const insight = useMutation({ mutationFn: () => insightFn({}), onError: (e: Error) => toast.error(e.message) });
 
+  // Stats
+  const stats = useMemo(() => {
+    const arr = logs ?? [];
+    const last7 = arr.slice(0, 7);
+    const avgCoffee = last7.length ? (last7.reduce((s, l: any) => s + (l.coffee_cups ?? 0), 0) / last7.length).toFixed(1) : "0";
+    const brushingDone = last7.filter((l: any) => l.brushing_morning && l.brushing_night).length;
+    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const dayScores: number[] = [0, 0, 0, 0, 0, 0, 0];
+    arr.forEach((l: any) => {
+      const d = new Date(l.log_date).getDay();
+      const score = (l.brushing_morning ? 1 : 0) + (l.brushing_night ? 1 : 0) + (l.flossing ? 1 : 0);
+      dayScores[d] += score;
+    });
+    const bestIdx = dayScores.indexOf(Math.max(...dayScores));
+    return { avgCoffee, brushingDone, total: last7.length, bestDay: arr.length ? days[bestIdx] : "—" };
+  }, [logs]);
+
+  const coffeeChart = useMemo(() => {
+    const arr = (logs ?? []).slice(0, 7).reverse();
+    return arr.map((l: any) => ({ date: new Date(l.log_date).toLocaleDateString("id-ID", { weekday: "short" }), cups: l.coffee_cups ?? 0 }));
+  }, [logs]);
+
+  // Heatmap (last 30 days)
+  const heatmap = useMemo(() => {
+    const map = new Map<string, number>();
+    (logs ?? []).forEach((l: any) => {
+      const s = (l.brushing_morning ? 1 : 0) + (l.brushing_night ? 1 : 0) + (l.flossing ? 1 : 0) + (l.mouthwash ? 1 : 0);
+      map.set(l.log_date, s);
+    });
+    const cells: { date: string; score: number }[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const key = d.toISOString().split("T")[0];
+      cells.push({ date: key, score: map.get(key) ?? 0 });
+    }
+    return cells;
+  }, [logs]);
+
   return (
-    <div className="mx-auto max-w-5xl p-6 md:p-10">
-      <header className="mb-8 flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
-          <ListChecks className="h-5 w-5" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Habit Tracker</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Catat kebiasaan harian Anda — AI akan beri insight.</p>
-        </div>
+    <div className="mx-auto max-w-7xl p-6 md:p-10">
+      <header className="mb-6">
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Habit Tracker</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Catat kebiasaan harian — AI akan beri insight.</p>
       </header>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Daily Log */}
         <div className="rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
-          <h2 className="text-lg font-semibold text-foreground">Log Hari Ini</h2>
-          <div className="mt-4 space-y-3">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <Sparkles className="h-4 w-4 text-primary" /> Daily Log — {new Date(today).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+          </h2>
+
+          <p className="mt-5 text-sm font-medium text-foreground">Oral Hygiene</p>
+          <div className="mt-3 space-y-2">
             {[
-              { key: "brushing_morning", label: "Sikat gigi pagi" },
-              { key: "brushing_night", label: "Sikat gigi malam" },
-              { key: "flossing", label: "Floss" },
-              { key: "mouthwash", label: "Mouthwash" },
+              { key: "brushing_morning", label: "Sikat gigi pagi", icon: Sun, color: "text-amber-500" },
+              { key: "brushing_night", label: "Sikat gigi malam", icon: Moon, color: "text-indigo-500" },
+              { key: "flossing", label: "Flossing", icon: Sparkles, color: "text-emerald-500" },
+              { key: "mouthwash", label: "Mouthwash", icon: Droplet, color: "text-cyan-500" },
             ].map((it) => (
-              <label key={it.key} className="flex items-center gap-3 rounded-xl border border-border bg-background/40 px-3 py-2.5 cursor-pointer">
+              <label key={it.key} className="flex items-center gap-3 rounded-xl border border-border bg-background/40 px-4 py-3 cursor-pointer hover:border-primary/40 transition">
                 <input type="checkbox" checked={(form as any)[it.key]} onChange={(e) => setForm({ ...form, [it.key]: e.target.checked })} className="h-4 w-4 accent-primary" />
+                <it.icon className={`h-4 w-4 ${it.color}`} />
                 <span className="text-sm text-foreground">{it.label}</span>
               </label>
             ))}
+          </div>
+
+          <p className="mt-6 text-sm font-medium text-foreground">Konsumsi Hari Ini</p>
+          <div className="mt-3 space-y-2">
             {[
-              { key: "coffee_cups", label: "Cangkir kopi" },
-              { key: "tea_cups", label: "Cangkir teh" },
-              { key: "cigarettes", label: "Batang rokok" },
+              { key: "coffee_cups", label: "Kopi", icon: Coffee, color: "text-amber-700" },
+              { key: "tea_cups", label: "Teh", icon: Coffee, color: "text-emerald-600" },
+              { key: "cigarettes", label: "Rokok", icon: Cigarette, color: "text-slate-500" },
             ].map((it) => (
-              <div key={it.key} className="flex items-center justify-between rounded-xl border border-border bg-background/40 px-3 py-2">
-                <span className="text-sm text-foreground">{it.label}</span>
-                <input type="number" min={0} max={50} value={(form as any)[it.key]} onChange={(e) => setForm({ ...form, [it.key]: parseInt(e.target.value || "0") })} className="w-20 rounded-lg border border-border bg-background px-2 py-1 text-sm text-right" />
+              <div key={it.key} className="flex items-center justify-between rounded-xl border border-border bg-background/40 px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <it.icon className={`h-4 w-4 ${it.color}`} />
+                  <span className="text-sm text-foreground">{it.label}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setForm({ ...form, [it.key]: Math.max(0, (form as any)[it.key] - 1) })}
+                    className="h-7 w-7 rounded-full border border-primary text-primary hover:bg-primary/5">−</button>
+                  <span className="w-6 text-center text-sm font-semibold tabular-nums text-foreground">{(form as any)[it.key]}</span>
+                  <button onClick={() => setForm({ ...form, [it.key]: Math.min(50, (form as any)[it.key] + 1) })}
+                    className="h-7 w-7 rounded-full border border-primary text-primary hover:bg-primary/5">+</button>
+                </div>
               </div>
             ))}
           </div>
-          <button onClick={() => save.mutate()} disabled={save.isPending} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60" style={{ background: "var(--gradient-primary)" }}>
-            {save.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Simpan
+
+          <button onClick={() => save.mutate()} disabled={save.isPending}
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
+            style={{ background: "var(--gradient-primary)" }}>
+            {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Simpan Log Hari Ini
           </button>
         </div>
 
-        <div className="space-y-4">
+        {/* Right column */}
+        <div className="space-y-6">
+          {/* Heatmap */}
+          <div className="rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+            <div className="flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">📅 Activity Heatmap</h2>
+              <span className="text-xs text-muted-foreground">30 hari terakhir</span>
+            </div>
+            <div className="mt-4 grid grid-cols-[repeat(15,minmax(0,1fr))] gap-1.5">
+              {heatmap.map((c) => (
+                <div key={c.date} title={`${c.date}: ${c.score}/4`}
+                  className="aspect-square rounded-[4px]"
+                  style={{
+                    background: c.score === 0 ? "hsl(var(--secondary))" :
+                      c.score === 1 ? "rgb(187 247 208)" :
+                      c.score === 2 ? "rgb(134 239 172)" :
+                      c.score === 3 ? "rgb(74 222 128)" : "rgb(34 197 94)",
+                  }} />
+              ))}
+            </div>
+            <div className="mt-3 flex items-center justify-end gap-1 text-[10px] text-muted-foreground">
+              <span>Less</span>
+              {["hsl(var(--secondary))", "rgb(187 247 208)", "rgb(134 239 172)", "rgb(74 222 128)", "rgb(34 197 94)"].map((c, i) => (
+                <span key={i} className="h-2.5 w-2.5 rounded-[2px]" style={{ background: c }} />
+              ))}
+              <span>More</span>
+            </div>
+          </div>
+
+          {/* Stat cards */}
+          <div className="grid grid-cols-3 gap-3">
+            <StatBox value={stats.avgCoffee} label="Avg Coffee/Day" />
+            <StatBox value={`${stats.brushingDone}/${stats.total}`} label="Brushing Complete" />
+            <StatBox value={stats.bestDay} label="Best Day" small />
+          </div>
+
+          {/* AI Insight */}
           <div className="rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-foreground">AI Insight</h2>
-              <button onClick={() => insight.mutate()} disabled={insight.isPending} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/15">
+              <button onClick={() => insight.mutate()} disabled={insight.isPending}
+                className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/15">
                 {insight.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />} Generate
               </button>
             </div>
@@ -103,22 +206,61 @@ function HabitPage() {
               <p className="mt-3 text-sm text-muted-foreground">Klik Generate untuk dapat insight berbasis 7 hari terakhir.</p>
             )}
           </div>
-
-          <div className="rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
-            <h2 className="text-lg font-semibold text-foreground">7 Hari Terakhir</h2>
-            <div className="mt-3 space-y-1.5 text-sm">
-              {logs && logs.length > 0 ? logs.map((l: any) => (
-                <div key={l.id} className="flex items-center justify-between rounded-lg bg-secondary/40 px-3 py-2">
-                  <span className="text-foreground">{new Date(l.log_date).toLocaleDateString("id-ID")}</span>
-                  <span className="text-xs text-muted-foreground">
-                    🪥 {(l.brushing_morning ? 1 : 0) + (l.brushing_night ? 1 : 0)}/2 · ☕ {l.coffee_cups} · 🚬 {l.cigarettes}
-                  </span>
-                </div>
-              )) : <p className="text-sm text-muted-foreground">Belum ada log.</p>}
-            </div>
-          </div>
         </div>
       </div>
+
+      {/* Coffee chart */}
+      <div className="mt-6 rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+        <h2 className="text-lg font-semibold text-foreground">Konsumsi Kopi (7 Hari)</h2>
+        <div className="mt-4 h-56">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={coffeeChart}>
+              <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} allowDecimals={false} />
+              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+              <Line type="monotone" dataKey="cups" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Achievements */}
+      <div className="mt-6 rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+        <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+          <Trophy className="h-4 w-4 text-amber-500" /> Achievements
+        </h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {[
+            { icon: Trophy, title: "7-Day Streak", desc: "Sikat gigi 7 hari berturut", earned: stats.brushingDone >= 7, color: "amber" },
+            { icon: Star, title: "First Scan", desc: "Tooth scan pertama", earned: true, color: "rose" },
+            { icon: Award, title: "Floss Master", desc: "Flossing tiap hari sebulan", earned: false, color: "purple" },
+            { icon: Crown, title: "Consistency King", desc: "Log 30 hari berturut", earned: (logs?.length ?? 0) >= 30, color: "indigo" },
+            { icon: Coffee, title: "Coffee Reducer", desc: "Turunkan kopi 20%", earned: false, color: "emerald" },
+          ].map((a) => (
+            <div key={a.title} className={`flex items-center gap-3 rounded-xl p-3 ${a.earned ? "bg-primary/5" : "bg-secondary/40 opacity-60"}`}>
+              <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${a.earned ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+                <a.icon className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">{a.title}</p>
+                <p className="truncate text-[11px] text-muted-foreground">{a.desc}</p>
+                <p className={`mt-0.5 text-[10px] font-medium ${a.earned ? "text-emerald-600" : "text-muted-foreground"}`}>
+                  {a.earned ? "✓ Earned" : <><Lock className="mr-0.5 inline h-2.5 w-2.5" /> Locked</>}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatBox({ value, label, small }: { value: string | number; label: string; small?: boolean }) {
+  return (
+    <div className="rounded-2xl bg-primary/5 p-4 text-center">
+      <p className={`font-bold text-primary ${small ? "text-lg" : "text-2xl"}`}>{value}</p>
+      <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
     </div>
   );
 }
