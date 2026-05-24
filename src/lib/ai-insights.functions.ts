@@ -100,19 +100,34 @@ Juga sertakan: summary 2-3 kalimat, methodology (penjelasan bagaimana AI menilai
     )) as RiskAnalysis;
   });
 
+export const getRecommendations = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data } = await supabase
+      .from("recommendations")
+      .select("items, updated_at")
+      .eq("user_id", userId)
+      .maybeSingle();
+    return {
+      items: ((data?.items as unknown) as Recommendation[]) ?? null,
+      updated_at: data?.updated_at ?? null,
+    };
+  });
+
 export const generateRecommendations = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
     const [{ data: scans }, { data: habits }] = await Promise.all([
       supabase.from("tooth_scans").select("*").order("created_at", { ascending: false }).limit(5),
       supabase.from("habit_logs").select("*").order("log_date", { ascending: false }).limit(7),
     ]);
     const summary = `Scan: ${(scans ?? []).map((s: any) => s.primary_shade).join(", ") || "—"}. Habit 7 hari: ${JSON.stringify(habits ?? []).slice(0, 800)}`;
 
-    return (await callAI(
-      "Anda asisten perawatan gigi. Beri rekomendasi personal yang spesifik & actionable. Bahasa Indonesia.",
-      `Beri 4-6 rekomendasi personal berdasarkan data:\n${summary}\n\nKategori: oral_care, lifestyle, professional, diet, whitening.`,
+    const result = (await callAI(
+      "Anda asisten perawatan gigi. Beri rekomendasi personal yang spesifik & actionable, dengan prioritas, langkah aksi, dan target terukur. Bahasa Indonesia.",
+      `Beri 4-6 rekomendasi personal berdasarkan data:\n${summary}\n\nUntuk SETIAP rekomendasi sertakan:\n- title singkat\n- description 1-2 kalimat\n- category: oral_care | lifestyle | professional | diet | whitening\n- priority: critical | high | moderate | low\n- reason: kenapa AI menyarankan ini\n- current: kondisi saat ini (singkat, mis. "5 cangkir/hari")\n- target: target yang diinginkan (singkat)\n- difficulty: 1-4\n- steps: 3 langkah aksi konkret`,
       "report_recommendations",
       {
         type: "object",
@@ -121,12 +136,23 @@ export const generateRecommendations = createServerFn({ method: "POST" })
             type: "array", minItems: 4, maxItems: 6,
             items: { type: "object", properties: {
               title: { type: "string" }, description: { type: "string" },
-              category: { type: "string" }, reason: { type: "string" }
-            }, required: ["title", "description", "category", "reason"] }
+              category: { type: "string" }, reason: { type: "string" },
+              priority: { type: "string", enum: ["critical", "high", "moderate", "low"] },
+              current: { type: "string" }, target: { type: "string" },
+              difficulty: { type: "number", minimum: 1, maximum: 4 },
+              steps: { type: "array", minItems: 2, maxItems: 4, items: { type: "string" } }
+            }, required: ["title", "description", "category", "reason", "priority", "current", "target", "difficulty", "steps"] }
           }
         }, required: ["items"]
       }
     )) as { items: Recommendation[] };
+
+    await supabase.from("recommendations").upsert(
+      { user_id: userId, items: result.items as any, updated_at: new Date().toISOString() },
+      { onConflict: "user_id" }
+    );
+
+    return result;
   });
 
 export const generateHabitInsights = createServerFn({ method: "POST" })
