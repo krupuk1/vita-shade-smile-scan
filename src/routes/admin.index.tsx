@@ -4,7 +4,7 @@ import { Shield, Users, Camera, Activity, ListChecks, Sparkles, TrendingUp } fro
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_admin/")({
+export const Route = createFileRoute("/admin/")({
   component: AdminOverview,
   head: () => ({ meta: [{ title: "Admin Overview — Tintify" }] }),
 });
