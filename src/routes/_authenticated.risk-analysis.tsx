@@ -74,9 +74,9 @@ function RiskPage() {
             </div>
             <div className="mt-5">
               <p className="mb-2 text-xs font-medium text-muted-foreground">Vita Shade Scale Position</p>
-              <div className="flex gap-1 overflow-x-auto">
+              <div className="grid grid-cols-9 gap-1">
                 {["A1", "B1", "A2", "B2", "A3", "A3.5", "A4", "B4", "C4"].map((s) => (
-                  <div key={s} className={`flex-1 min-w-[40px] rounded-md p-2 text-center text-[10px] font-medium ${shade === s ? "ring-2 ring-primary scale-105" : ""}`} style={{ background: SHADE_COLORS[s] ?? "#ddd", color: "#3a2a1a" }}>
+                  <div key={s} className={`rounded-md px-1 py-2 text-center text-[10px] font-medium ${shade === s ? "ring-2 ring-primary scale-105" : ""}`} style={{ background: SHADE_COLORS[s] ?? "#ddd", color: "#3a2a1a" }}>
                     {s}
                   </div>
                 ))}

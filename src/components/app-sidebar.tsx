@@ -66,11 +66,11 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={path === "/admin"}>
-                    <Link to="/admin" className="flex items-center gap-2">
+                  <SidebarMenuButton asChild isActive={path.startsWith("/admin")}>
+                    <a href="/admin" className="flex items-center gap-2">
                       <Shield className="h-4 w-4" />
                       {!collapsed && <span>Admin Panel</span>}
-                    </Link>
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
