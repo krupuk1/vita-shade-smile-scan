@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Shield, LayoutDashboard, Users, Camera, Sparkles, ArrowLeft, LogOut } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Camera, Sparkles, ArrowLeft, LogOut, FileText, Settings } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
@@ -14,11 +14,17 @@ export function AdminSidebar() {
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
 
-  const items = [
+  const manage = [
     { title: "Overview", url: "/admin", icon: LayoutDashboard },
     { title: "Pengguna", url: "/admin/users", icon: Users },
+    { title: "Artikel", url: "/admin/articles", icon: FileText },
+  ];
+  const data = [
     { title: "Scan", url: "/admin/scans", icon: Camera },
     { title: "Rekomendasi AI", url: "/admin/recommendations", icon: Sparkles },
+  ];
+  const system = [
+    { title: "Settings", url: "/admin/settings", icon: Settings },
   ];
 
   async function handleSignOut() {
