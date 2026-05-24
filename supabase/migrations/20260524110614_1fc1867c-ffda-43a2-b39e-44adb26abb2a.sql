@@ -1,0 +1,1 @@
+ALTER TABLE public.habit_logs ADD CONSTRAINT habit_logs_user_date_unique UNIQUE (user_id, log_date);
