@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
-import { Upload, Sparkles, Loader2, RotateCcw, Camera, ShieldCheck } from "lucide-react";
+import { Upload, Sparkles, Loader2, RotateCcw, Camera, ShieldCheck, Palette } from "lucide-react";
 import { analyzeTeeth, type ToothAnalysis } from "@/lib/analyze-teeth.functions";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
@@ -91,6 +91,14 @@ function Home() {
             <span className="font-medium text-foreground">VITA Classical Shade Guide</span> secara
             instan.
           </p>
+          <Link
+            to="/shades"
+            className="mt-5 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/60 px-4 py-2 text-sm text-foreground transition hover:bg-card hover:border-primary/30"
+            style={{ boxShadow: "var(--shadow-card)" }}
+          >
+            <Palette className="h-4 w-4 text-primary" />
+            Lihat Panduan Warna VITA
+          </Link>
         </header>
 
         {/* Upload / Preview */}
