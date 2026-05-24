@@ -1,8 +1,22 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export interface RiskItem { name: string; level: "low" | "medium" | "high"; score: number; reason: string; }
-export interface RiskAnalysis { risks: RiskItem[]; summary: string; }
+export interface RiskCriterion { label: string; score: number; weight: number; finding: string; }
+export interface RiskItem {
+  name: string;
+  level: "low" | "medium" | "high";
+  score: number;
+  reason: string;
+  factors: string[];
+  criteria: RiskCriterion[];
+  recommendation: string;
+}
+export interface RiskAnalysis {
+  risks: RiskItem[];
+  summary: string;
+  methodology: string;
+  overall_score: number;
+}
 export interface Recommendation { title: string; description: string; category: string; reason: string; }
 
 async function callAI(systemPrompt: string, userPrompt: string, toolName: string, schema: any) {
@@ -45,8 +59,14 @@ export const generateRiskAnalysis = createServerFn({ method: "POST" })
 Habit 14 hari: ${(habits ?? []).map((h: any) => `${h.log_date}: brush=${(h.brushing_morning ? 1 : 0) + (h.brushing_night ? 1 : 0)}/2, floss=${h.flossing}, kopi=${h.coffee_cups}, rokok=${h.cigarettes}`).join("; ") || "belum ada"}.`;
 
     return (await callAI(
-      "Anda adalah asisten kesehatan gigi. Analisis risiko berbasis data scan & habit user. Jawab dalam Bahasa Indonesia.",
-      `Berdasarkan data berikut, identifikasi 3-5 risiko utama (karies, plak/tartar, stain, gum disease, enamel erosion) dengan skor 0-100 dan level (low/medium/high). Sertakan summary 2-3 kalimat.\n\nData:\n${summary}`,
+      "Anda adalah asisten kesehatan gigi profesional. Analisis risiko berbasis data scan & habit user secara transparan. Jawab dalam Bahasa Indonesia.",
+      `Berdasarkan data berikut, identifikasi 3-5 risiko utama (karies, plak/tartar, stain, gum disease, enamel erosion). Untuk SETIAP risiko, sertakan:
+- score 0-100 dan level (low/medium/high)
+- reason: penjelasan singkat (1 kalimat)
+- factors: 3-4 bukti spesifik dari data yang mendukung penilaian
+- criteria: 3-4 kriteria penilaian dengan label, score 0-100, weight 0-1 (jumlah weight = 1), dan finding spesifik
+- recommendation: 1 saran konkret untuk mitigasi
+Juga sertakan: summary 2-3 kalimat, methodology (penjelasan bagaimana AI menilai dari data scan + habit), overall_score 0-100.\n\nData:\n${summary}`,
       "report_risk",
       {
         type: "object",
@@ -54,13 +74,28 @@ Habit 14 hari: ${(habits ?? []).map((h: any) => `${h.log_date}: brush=${(h.brush
           risks: {
             type: "array", minItems: 3, maxItems: 5,
             items: { type: "object", properties: {
-              name: { type: "string" }, level: { type: "string", enum: ["low", "medium", "high"] },
-              score: { type: "number", minimum: 0, maximum: 100 }, reason: { type: "string" }
-            }, required: ["name", "level", "score", "reason"] }
+              name: { type: "string" },
+              level: { type: "string", enum: ["low", "medium", "high"] },
+              score: { type: "number", minimum: 0, maximum: 100 },
+              reason: { type: "string" },
+              factors: { type: "array", minItems: 2, maxItems: 5, items: { type: "string" } },
+              criteria: {
+                type: "array", minItems: 2, maxItems: 4,
+                items: { type: "object", properties: {
+                  label: { type: "string" },
+                  score: { type: "number", minimum: 0, maximum: 100 },
+                  weight: { type: "number", minimum: 0, maximum: 1 },
+                  finding: { type: "string" }
+                }, required: ["label", "score", "weight", "finding"] }
+              },
+              recommendation: { type: "string" }
+            }, required: ["name", "level", "score", "reason", "factors", "criteria", "recommendation"] }
           },
-          summary: { type: "string" }
+          summary: { type: "string" },
+          methodology: { type: "string" },
+          overall_score: { type: "number", minimum: 0, maximum: 100 }
         },
-        required: ["risks", "summary"]
+        required: ["risks", "summary", "methodology", "overall_score"]
       }
     )) as RiskAnalysis;
   });
