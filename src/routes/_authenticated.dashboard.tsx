@@ -130,10 +130,10 @@ function Dashboard() {
           <p className="text-xs text-muted-foreground">Rata-rata 7 hari terakhir</p>
           {behavior ? (
             <div className="mt-4 space-y-2.5">
-              <BehaviorRow icon={Coffee} label="Kopi" value={`${behavior.coffee} cup/hari`} {...level(Number(behavior.coffee), 3, 1)} />
-              <BehaviorRow icon={Cigarette} label="Rokok" value={`${behavior.cigarettes} btg/hari`} {...level(Number(behavior.cigarettes), 5, 1)} />
-              <BehaviorRow icon={Brush} label="Sikat Gigi" value={`${Math.round(behavior.brushPct * 100)}%`} {...level(1 - behavior.brushPct, 0.5, 0.2)} />
-              <BehaviorRow icon={CheckCircle2} label="Flossing" value={`${Math.round(behavior.flossPct * 100)}%`} {...level(1 - behavior.flossPct, 0.7, 0.3)} />
+              <BehaviorRow icon={Coffee} label="Kopi" value={`${behavior.coffee} cup/hari`} lvl={level(Number(behavior.coffee), 3, 1)} />
+              <BehaviorRow icon={Cigarette} label="Rokok" value={`${behavior.cigarettes} btg/hari`} lvl={level(Number(behavior.cigarettes), 5, 1)} />
+              <BehaviorRow icon={Brush} label="Sikat Gigi" value={`${Math.round(behavior.brushPct * 100)}%`} lvl={level(1 - behavior.brushPct, 0.5, 0.2)} />
+              <BehaviorRow icon={CheckCircle2} label="Flossing" value={`${Math.round(behavior.flossPct * 100)}%`} lvl={level(1 - behavior.flossPct, 0.7, 0.3)} />
             </div>
           ) : (
             <p className="mt-4 text-sm text-muted-foreground">Belum ada log habit. <Link to="/habit-tracker" className="text-primary hover:underline">Catat sekarang →</Link></p>
