@@ -232,7 +232,7 @@ function ResultPanel({ result }: { result: ToothAnalysis }) {
           <p className="mt-1 font-display text-5xl font-semibold text-foreground">
             {result.primaryShade}
           </p>
-          {result.secondaryShade && (
+          {result.secondaryShade && result.secondaryShade.trim() !== "" && (
             <p className="text-sm text-muted-foreground">
               Alternatif: <span className="font-medium">{result.secondaryShade}</span>
             </p>
