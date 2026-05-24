@@ -219,7 +219,7 @@ function QuickAction({ to, title, desc, icon: Icon, primary }: { to: string; tit
   );
 }
 
-function BehaviorRow({ icon: Icon, label, value, label: lvl, cls }: any) {
+function BehaviorRow({ icon: Icon, label, value, lvl }: { icon: any; label: string; value: string; lvl: { label: string; cls: string } }) {
   return (
     <div className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3">
       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-card">
@@ -229,7 +229,7 @@ function BehaviorRow({ icon: Icon, label, value, label: lvl, cls }: any) {
         <p className="text-sm font-medium text-foreground">{label}</p>
         <p className="text-[11px] text-muted-foreground">{value}</p>
       </div>
-      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${cls}`}>{lvl}</span>
+      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${lvl.cls}`}>{lvl.label}</span>
     </div>
   );
 }
