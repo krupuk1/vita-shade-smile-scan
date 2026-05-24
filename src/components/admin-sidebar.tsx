@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Camera, Activity, ListChecks, Sparkles, LogOut, Shield, Palette, User } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Camera, Sparkles, ArrowLeft, LogOut } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
@@ -7,21 +7,18 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
-export function AppSidebar() {
+export function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const path = useRouterState({ select: (r) => r.location.pathname });
-  const { isAdmin, signOut, user } = useAuth();
+  const { signOut, user } = useAuth();
   const navigate = useNavigate();
 
   const items = [
-    { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-    { title: "Tooth Scan", url: "/scan", icon: Camera },
-    { title: "Risk Analysis", url: "/risk-analysis", icon: Activity },
-    { title: "Recommendations", url: "/recommendations", icon: Sparkles },
-    { title: "Habit Tracker", url: "/habit-tracker", icon: ListChecks },
-    { title: "VITA Shades", url: "/shades", icon: Palette },
-    { title: "Profile", url: "/profile", icon: User },
+    { title: "Overview", url: "/admin", icon: LayoutDashboard },
+    { title: "Pengguna", url: "/admin/users", icon: Users },
+    { title: "Scan", url: "/admin/scans", icon: Camera },
+    { title: "Rekomendasi AI", url: "/admin/recommendations", icon: Sparkles },
   ];
 
   async function handleSignOut() {
@@ -33,17 +30,17 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b">
-        <Link to="/" className="flex items-center gap-2 px-2 py-2">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
-            <Sparkles className="h-4 w-4" />
+        <Link to="/admin" className="flex items-center gap-2 px-2 py-2">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 text-white">
+            <Shield className="h-4 w-4" />
           </span>
-          {!collapsed && <span className="font-semibold tracking-tight">Tintify</span>}
+          {!collapsed && <span className="font-semibold tracking-tight">Admin Panel</span>}
         </Link>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>Manajemen</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -60,23 +57,21 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Admin</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={path.startsWith("/admin")}>
-                    <a href="/admin" className="flex items-center gap-2">
-                      <Shield className="h-4 w-4" />
-                      {!collapsed && <span>Admin Panel</span>}
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+        <SidebarGroup>
+          <SidebarGroupLabel>Navigasi</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link to="/dashboard" className="flex items-center gap-2">
+                    <ArrowLeft className="h-4 w-4" />
+                    {!collapsed && <span>Kembali ke App</span>}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="border-t">
