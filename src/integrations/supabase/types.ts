@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_provider_settings: {
+        Row: {
+          api_key: string | null
+          base_url: string | null
+          created_at: string
+          id: string
+          model: string
+          provider: string
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          api_key?: string | null
+          base_url?: string | null
+          created_at?: string
+          id?: string
+          model?: string
+          provider?: string
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          api_key?: string | null
+          base_url?: string | null
+          created_at?: string
+          id?: string
+          model?: string
+          provider?: string
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       articles: {
         Row: {
           author_id: string | null
