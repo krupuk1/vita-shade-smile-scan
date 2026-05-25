@@ -138,7 +138,7 @@ function Dashboard() {
 
       {/* Quick stats */}
       <div className="mt-6 grid gap-4 md:grid-cols-4">
-        <StatCard label="Shade Saat Ini" value={lastScan?.primary_shade ?? "—"} icon={TrendingUp} />
+        <ShadeStatCard shade={lastScan?.primary_shade ?? null} />
         <StatCard label="Total Scan" value={scans?.length ?? 0} icon={Camera} />
         <StatCard label="Hygiene Score" value={lastScan?.hygiene_score ? `${Math.round(Number(lastScan.hygiene_score))}/100` : "—"} icon={Activity} />
         <StatCard label="Log Habit (7H)" value={habits?.length ?? 0} icon={ListChecks} />
