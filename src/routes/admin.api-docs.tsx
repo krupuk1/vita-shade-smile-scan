@@ -178,3 +178,41 @@ function methodColor(m: string) {
     default: return "bg-slate-600";
   }
 }
+
+function buildMarkdown(baseUrl: string): string {
+  const lines: string[] = [];
+  lines.push(`# Tintify Mobile API`, ``);
+  lines.push(`**Base URL:** \`${baseUrl}\``, ``);
+  lines.push(`## Authentication`, ``);
+  lines.push(`Endpoint dengan tanda \`auth\` memerlukan header:`, ``);
+  lines.push(`\`\`\``, `Authorization: Bearer <access_token>`, `\`\`\``, ``);
+  lines.push(`Dapatkan token via \`POST /api/mobile/auth/login\`. Token kedaluwarsa ~1 jam.`, ``);
+
+  for (const g of groups) {
+    lines.push(`## ${g.title}`, ``);
+    for (const e of g.endpoints) {
+      lines.push(`### ${e.method} ${e.path}`);
+      lines.push(`**Auth:** ${e.auth ? "required" : "public"}  `);
+      lines.push(e.desc, ``);
+      if (e.body) {
+        lines.push(`**Request body:**`, "```json", e.body, "```", ``);
+      }
+      if (e.response) {
+        lines.push(`**Response:**`, "```json", e.response, "```", ``);
+      }
+    }
+  }
+
+  lines.push(`## Contoh cURL`, ``);
+  lines.push("```bash");
+  lines.push(`# 1) Login`);
+  lines.push(`curl -X POST ${baseUrl}/api/mobile/auth/login \\`);
+  lines.push(`  -H "Content-Type: application/json" \\`);
+  lines.push(`  -d '{"email":"user@mail.com","password":"secret123"}'`);
+  lines.push(``);
+  lines.push(`# 2) Ambil profil`);
+  lines.push(`curl ${baseUrl}/api/mobile/profile \\`);
+  lines.push(`  -H "Authorization: Bearer <ACCESS_TOKEN>"`);
+  lines.push("```");
+  return lines.join("\n");
+}
