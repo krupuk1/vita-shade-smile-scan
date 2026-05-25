@@ -1,5 +1,4 @@
-import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin-sidebar";
@@ -20,12 +19,9 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminLayout() {
-  const { user, isAdmin, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && (!user || !isAdmin)) navigate({ to: "/dashboard" });
-  }, [loading, user, isAdmin, navigate]);
+  // beforeLoad already validated admin role; trust it here to avoid race
+  // conditions with the async role fetch in useAuth (which caused redirect loops).
+  const { user, loading } = useAuth();
 
   if (loading || !user) {
     return (
@@ -53,3 +49,4 @@ function AdminLayout() {
     </SidebarProvider>
   );
 }
+

@@ -21,12 +21,21 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminScansRouteImport } from './routes/admin.scans'
 import { Route as AdminRecommendationsRouteImport } from './routes/admin.recommendations'
 import { Route as AdminArticlesRouteImport } from './routes/admin.articles'
+import { Route as AdminApiDocsRouteImport } from './routes/admin.api-docs'
 import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated.scan'
 import { Route as AuthenticatedRiskAnalysisRouteImport } from './routes/_authenticated.risk-analysis'
 import { Route as AuthenticatedRecommendationsRouteImport } from './routes/_authenticated.recommendations'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated.profile'
 import { Route as AuthenticatedHabitTrackerRouteImport } from './routes/_authenticated.habit-tracker'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
+import { Route as ApiMobileScansRouteImport } from './routes/api/mobile/scans'
+import { Route as ApiMobileRecommendationsRouteImport } from './routes/api/mobile/recommendations'
+import { Route as ApiMobileProfileRouteImport } from './routes/api/mobile/profile'
+import { Route as ApiMobileHabitsRouteImport } from './routes/api/mobile/habits'
+import { Route as ApiMobileArticlesRouteImport } from './routes/api/mobile/articles'
+import { Route as ApiMobileAnalyzeRouteImport } from './routes/api/mobile/analyze'
+import { Route as ApiMobileAuthSignupRouteImport } from './routes/api/mobile/auth.signup'
+import { Route as ApiMobileAuthLoginRouteImport } from './routes/api/mobile/auth.login'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -87,6 +96,11 @@ const AdminArticlesRoute = AdminArticlesRouteImport.update({
   path: '/articles',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminApiDocsRoute = AdminApiDocsRouteImport.update({
+  id: '/api-docs',
+  path: '/api-docs',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AuthenticatedScanRoute = AuthenticatedScanRouteImport.update({
   id: '/scan',
   path: '/scan',
@@ -120,6 +134,47 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const ApiMobileScansRoute = ApiMobileScansRouteImport.update({
+  id: '/api/mobile/scans',
+  path: '/api/mobile/scans',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileRecommendationsRoute =
+  ApiMobileRecommendationsRouteImport.update({
+    id: '/api/mobile/recommendations',
+    path: '/api/mobile/recommendations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiMobileProfileRoute = ApiMobileProfileRouteImport.update({
+  id: '/api/mobile/profile',
+  path: '/api/mobile/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileHabitsRoute = ApiMobileHabitsRouteImport.update({
+  id: '/api/mobile/habits',
+  path: '/api/mobile/habits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileArticlesRoute = ApiMobileArticlesRouteImport.update({
+  id: '/api/mobile/articles',
+  path: '/api/mobile/articles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileAnalyzeRoute = ApiMobileAnalyzeRouteImport.update({
+  id: '/api/mobile/analyze',
+  path: '/api/mobile/analyze',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileAuthSignupRoute = ApiMobileAuthSignupRouteImport.update({
+  id: '/api/mobile/auth/signup',
+  path: '/api/mobile/auth/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMobileAuthLoginRoute = ApiMobileAuthLoginRouteImport.update({
+  id: '/api/mobile/auth/login',
+  path: '/api/mobile/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -133,12 +188,21 @@ export interface FileRoutesByFullPath {
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/scan': typeof AuthenticatedScanRoute
+  '/admin/api-docs': typeof AdminApiDocsRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/recommendations': typeof AdminRecommendationsRoute
   '/admin/scans': typeof AdminScansRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/mobile/analyze': typeof ApiMobileAnalyzeRoute
+  '/api/mobile/articles': typeof ApiMobileArticlesRoute
+  '/api/mobile/habits': typeof ApiMobileHabitsRoute
+  '/api/mobile/profile': typeof ApiMobileProfileRoute
+  '/api/mobile/recommendations': typeof ApiMobileRecommendationsRoute
+  '/api/mobile/scans': typeof ApiMobileScansRoute
+  '/api/mobile/auth/login': typeof ApiMobileAuthLoginRoute
+  '/api/mobile/auth/signup': typeof ApiMobileAuthSignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -151,12 +215,21 @@ export interface FileRoutesByTo {
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/scan': typeof AuthenticatedScanRoute
+  '/admin/api-docs': typeof AdminApiDocsRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/recommendations': typeof AdminRecommendationsRoute
   '/admin/scans': typeof AdminScansRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin': typeof AdminIndexRoute
+  '/api/mobile/analyze': typeof ApiMobileAnalyzeRoute
+  '/api/mobile/articles': typeof ApiMobileArticlesRoute
+  '/api/mobile/habits': typeof ApiMobileHabitsRoute
+  '/api/mobile/profile': typeof ApiMobileProfileRoute
+  '/api/mobile/recommendations': typeof ApiMobileRecommendationsRoute
+  '/api/mobile/scans': typeof ApiMobileScansRoute
+  '/api/mobile/auth/login': typeof ApiMobileAuthLoginRoute
+  '/api/mobile/auth/signup': typeof ApiMobileAuthSignupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -172,12 +245,21 @@ export interface FileRoutesById {
   '/_authenticated/recommendations': typeof AuthenticatedRecommendationsRoute
   '/_authenticated/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
+  '/admin/api-docs': typeof AdminApiDocsRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/recommendations': typeof AdminRecommendationsRoute
   '/admin/scans': typeof AdminScansRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/mobile/analyze': typeof ApiMobileAnalyzeRoute
+  '/api/mobile/articles': typeof ApiMobileArticlesRoute
+  '/api/mobile/habits': typeof ApiMobileHabitsRoute
+  '/api/mobile/profile': typeof ApiMobileProfileRoute
+  '/api/mobile/recommendations': typeof ApiMobileRecommendationsRoute
+  '/api/mobile/scans': typeof ApiMobileScansRoute
+  '/api/mobile/auth/login': typeof ApiMobileAuthLoginRoute
+  '/api/mobile/auth/signup': typeof ApiMobileAuthSignupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -193,12 +275,21 @@ export interface FileRouteTypes {
     | '/recommendations'
     | '/risk-analysis'
     | '/scan'
+    | '/admin/api-docs'
     | '/admin/articles'
     | '/admin/recommendations'
     | '/admin/scans'
     | '/admin/settings'
     | '/admin/users'
     | '/admin/'
+    | '/api/mobile/analyze'
+    | '/api/mobile/articles'
+    | '/api/mobile/habits'
+    | '/api/mobile/profile'
+    | '/api/mobile/recommendations'
+    | '/api/mobile/scans'
+    | '/api/mobile/auth/login'
+    | '/api/mobile/auth/signup'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -211,12 +302,21 @@ export interface FileRouteTypes {
     | '/recommendations'
     | '/risk-analysis'
     | '/scan'
+    | '/admin/api-docs'
     | '/admin/articles'
     | '/admin/recommendations'
     | '/admin/scans'
     | '/admin/settings'
     | '/admin/users'
     | '/admin'
+    | '/api/mobile/analyze'
+    | '/api/mobile/articles'
+    | '/api/mobile/habits'
+    | '/api/mobile/profile'
+    | '/api/mobile/recommendations'
+    | '/api/mobile/scans'
+    | '/api/mobile/auth/login'
+    | '/api/mobile/auth/signup'
   id:
     | '__root__'
     | '/'
@@ -231,12 +331,21 @@ export interface FileRouteTypes {
     | '/_authenticated/recommendations'
     | '/_authenticated/risk-analysis'
     | '/_authenticated/scan'
+    | '/admin/api-docs'
     | '/admin/articles'
     | '/admin/recommendations'
     | '/admin/scans'
     | '/admin/settings'
     | '/admin/users'
     | '/admin/'
+    | '/api/mobile/analyze'
+    | '/api/mobile/articles'
+    | '/api/mobile/habits'
+    | '/api/mobile/profile'
+    | '/api/mobile/recommendations'
+    | '/api/mobile/scans'
+    | '/api/mobile/auth/login'
+    | '/api/mobile/auth/signup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -246,6 +355,14 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ShadesRoute: typeof ShadesRoute
   SignupRoute: typeof SignupRoute
+  ApiMobileAnalyzeRoute: typeof ApiMobileAnalyzeRoute
+  ApiMobileArticlesRoute: typeof ApiMobileArticlesRoute
+  ApiMobileHabitsRoute: typeof ApiMobileHabitsRoute
+  ApiMobileProfileRoute: typeof ApiMobileProfileRoute
+  ApiMobileRecommendationsRoute: typeof ApiMobileRecommendationsRoute
+  ApiMobileScansRoute: typeof ApiMobileScansRoute
+  ApiMobileAuthLoginRoute: typeof ApiMobileAuthLoginRoute
+  ApiMobileAuthSignupRoute: typeof ApiMobileAuthSignupRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -334,6 +451,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminArticlesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/api-docs': {
+      id: '/admin/api-docs'
+      path: '/api-docs'
+      fullPath: '/admin/api-docs'
+      preLoaderRoute: typeof AdminApiDocsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_authenticated/scan': {
       id: '/_authenticated/scan'
       path: '/scan'
@@ -376,6 +500,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/api/mobile/scans': {
+      id: '/api/mobile/scans'
+      path: '/api/mobile/scans'
+      fullPath: '/api/mobile/scans'
+      preLoaderRoute: typeof ApiMobileScansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/recommendations': {
+      id: '/api/mobile/recommendations'
+      path: '/api/mobile/recommendations'
+      fullPath: '/api/mobile/recommendations'
+      preLoaderRoute: typeof ApiMobileRecommendationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/profile': {
+      id: '/api/mobile/profile'
+      path: '/api/mobile/profile'
+      fullPath: '/api/mobile/profile'
+      preLoaderRoute: typeof ApiMobileProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/habits': {
+      id: '/api/mobile/habits'
+      path: '/api/mobile/habits'
+      fullPath: '/api/mobile/habits'
+      preLoaderRoute: typeof ApiMobileHabitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/articles': {
+      id: '/api/mobile/articles'
+      path: '/api/mobile/articles'
+      fullPath: '/api/mobile/articles'
+      preLoaderRoute: typeof ApiMobileArticlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/analyze': {
+      id: '/api/mobile/analyze'
+      path: '/api/mobile/analyze'
+      fullPath: '/api/mobile/analyze'
+      preLoaderRoute: typeof ApiMobileAnalyzeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/auth/signup': {
+      id: '/api/mobile/auth/signup'
+      path: '/api/mobile/auth/signup'
+      fullPath: '/api/mobile/auth/signup'
+      preLoaderRoute: typeof ApiMobileAuthSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/mobile/auth/login': {
+      id: '/api/mobile/auth/login'
+      path: '/api/mobile/auth/login'
+      fullPath: '/api/mobile/auth/login'
+      preLoaderRoute: typeof ApiMobileAuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -402,6 +582,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 interface AdminRouteChildren {
+  AdminApiDocsRoute: typeof AdminApiDocsRoute
   AdminArticlesRoute: typeof AdminArticlesRoute
   AdminRecommendationsRoute: typeof AdminRecommendationsRoute
   AdminScansRoute: typeof AdminScansRoute
@@ -411,6 +592,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminApiDocsRoute: AdminApiDocsRoute,
   AdminArticlesRoute: AdminArticlesRoute,
   AdminRecommendationsRoute: AdminRecommendationsRoute,
   AdminScansRoute: AdminScansRoute,
@@ -428,17 +610,15 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ShadesRoute: ShadesRoute,
   SignupRoute: SignupRoute,
+  ApiMobileAnalyzeRoute: ApiMobileAnalyzeRoute,
+  ApiMobileArticlesRoute: ApiMobileArticlesRoute,
+  ApiMobileHabitsRoute: ApiMobileHabitsRoute,
+  ApiMobileProfileRoute: ApiMobileProfileRoute,
+  ApiMobileRecommendationsRoute: ApiMobileRecommendationsRoute,
+  ApiMobileScansRoute: ApiMobileScansRoute,
+  ApiMobileAuthLoginRoute: ApiMobileAuthLoginRoute,
+  ApiMobileAuthSignupRoute: ApiMobileAuthSignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
