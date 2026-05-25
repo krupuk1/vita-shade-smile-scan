@@ -4,6 +4,7 @@ import {
   PlayCircle, ScanLine, BookOpenCheck, Star,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import heroImage from "@/assets/hero-tooth.jpg";
 
 export const Route = createFileRoute("/")({
   component: Landing,

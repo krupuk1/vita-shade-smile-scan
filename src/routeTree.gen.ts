@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminShadesRouteImport } from './routes/admin.shades'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminScansRouteImport } from './routes/admin.scans'
 import { Route as AdminRecommendationsRouteImport } from './routes/admin.recommendations'
@@ -74,6 +75,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminShadesRoute = AdminShadesRouteImport.update({
+  id: '/shades',
+  path: '/shades',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/admin/recommendations': typeof AdminRecommendationsRoute
   '/admin/scans': typeof AdminScansRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/shades': typeof AdminShadesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/': typeof AdminIndexRoute
   '/api/mobile/analyze': typeof ApiMobileAnalyzeRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByTo {
   '/admin/recommendations': typeof AdminRecommendationsRoute
   '/admin/scans': typeof AdminScansRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/shades': typeof AdminShadesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin': typeof AdminIndexRoute
   '/api/mobile/analyze': typeof ApiMobileAnalyzeRoute
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/admin/recommendations': typeof AdminRecommendationsRoute
   '/admin/scans': typeof AdminScansRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/shades': typeof AdminShadesRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/': typeof AdminIndexRoute
   '/api/mobile/analyze': typeof ApiMobileAnalyzeRoute
@@ -280,6 +289,7 @@ export interface FileRouteTypes {
     | '/admin/recommendations'
     | '/admin/scans'
     | '/admin/settings'
+    | '/admin/shades'
     | '/admin/users'
     | '/admin/'
     | '/api/mobile/analyze'
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/admin/recommendations'
     | '/admin/scans'
     | '/admin/settings'
+    | '/admin/shades'
     | '/admin/users'
     | '/admin'
     | '/api/mobile/analyze'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/admin/recommendations'
     | '/admin/scans'
     | '/admin/settings'
+    | '/admin/shades'
     | '/admin/users'
     | '/admin/'
     | '/api/mobile/analyze'
@@ -421,6 +433,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/shades': {
+      id: '/admin/shades'
+      path: '/shades'
+      fullPath: '/admin/shades'
+      preLoaderRoute: typeof AdminShadesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/settings': {
@@ -587,6 +606,7 @@ interface AdminRouteChildren {
   AdminRecommendationsRoute: typeof AdminRecommendationsRoute
   AdminScansRoute: typeof AdminScansRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminShadesRoute: typeof AdminShadesRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -597,6 +617,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminRecommendationsRoute: AdminRecommendationsRoute,
   AdminScansRoute: AdminScansRoute,
   AdminSettingsRoute: AdminSettingsRoute,
+  AdminShadesRoute: AdminShadesRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
