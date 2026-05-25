@@ -188,40 +188,69 @@ function HabitPage() {
               <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">📅 Activity Heatmap</h2>
               <span className="text-xs text-muted-foreground">30 hari terakhir</span>
             </div>
-            <div className="mt-4">
-              <div className="grid grid-cols-7 gap-1.5 pb-1.5 text-[10px] text-muted-foreground">
+            <div className="mt-4 flex gap-2">
+              {/* Weekday labels column */}
+              <div className="flex flex-col gap-1.5 pt-0.5 text-[10px] font-medium text-muted-foreground">
                 {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((d) => (
-                  <div key={d} className="text-center">{d}</div>
+                  <div key={d} className="flex h-8 w-7 items-center justify-end pr-1">{d}</div>
                 ))}
               </div>
-              <div className="space-y-1.5">
+              {/* Grid: columns are weeks */}
+              <div className="flex flex-1 gap-1.5">
                 {heatmap.map((week, wi) => (
-                  <div key={wi} className="grid grid-cols-7 gap-1.5">
-                    {week.map((c) => (
-                      <div
-                        key={c.date}
-                        title={c.isFuture ? c.date : `${c.date}: ${c.score}/4`}
-                        className="aspect-square rounded-[4px]"
-                        style={{
-                          background: c.isFuture ? "transparent" :
-                            c.score === 0 ? "hsl(var(--secondary))" :
-                            c.score === 1 ? "rgb(187 247 208)" :
-                            c.score === 2 ? "rgb(134 239 172)" :
-                            c.score === 3 ? "rgb(74 222 128)" : "rgb(34 197 94)",
-                          border: c.isFuture ? "1px dashed hsl(var(--border))" : "none",
-                        }}
-                      />
-                    ))}
+                  <div key={wi} className="flex flex-1 flex-col gap-1.5">
+                    {week.map((c) => {
+                      const bg = c.isFuture
+                        ? "transparent"
+                        : c.score === 0
+                        ? "hsl(var(--secondary))"
+                        : c.score === 1
+                        ? "color-mix(in oklab, hsl(var(--primary)) 25%, hsl(var(--card)))"
+                        : c.score === 2
+                        ? "color-mix(in oklab, hsl(var(--primary)) 50%, hsl(var(--card)))"
+                        : c.score === 3
+                        ? "color-mix(in oklab, hsl(var(--primary)) 75%, hsl(var(--card)))"
+                        : "hsl(var(--primary))";
+                      const textColor = c.score >= 2 ? "text-primary-foreground" : "text-foreground/60";
+                      const dateLabel = new Date(c.date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+                      const detail = c.isFuture
+                        ? `${dateLabel} — belum`
+                        : c.log
+                        ? `${dateLabel}\nSkor: ${c.score}/4\n${c.log.brushing_morning ? "✓" : "✗"} Sikat pagi · ${c.log.brushing_night ? "✓" : "✗"} Sikat malam\n${c.log.flossing ? "✓" : "✗"} Flossing · ${c.log.mouthwash ? "✓" : "✗"} Mouthwash\nKopi: ${c.log.coffee_cups ?? 0} · Teh: ${c.log.tea_cups ?? 0} · Rokok: ${c.log.cigarettes ?? 0}`
+                        : `${dateLabel} — tidak ada log`;
+                      return (
+                        <div
+                          key={c.date}
+                          title={detail}
+                          className={`flex h-8 items-center justify-center rounded-md text-[10px] font-semibold tabular-nums transition hover:scale-110 hover:ring-2 hover:ring-primary/40 ${textColor}`}
+                          style={{
+                            background: bg,
+                            border: c.isFuture ? "1px dashed hsl(var(--border))" : "1px solid hsl(var(--border) / 0.4)",
+                          }}
+                        >
+                          {!c.isFuture && c.dayNum}
+                        </div>
+                      );
+                    })}
                   </div>
                 ))}
               </div>
             </div>
-            <div className="mt-3 flex items-center justify-end gap-1 text-[10px] text-muted-foreground">
-              <span>Less</span>
-              {["hsl(var(--secondary))", "rgb(187 247 208)", "rgb(134 239 172)", "rgb(74 222 128)", "rgb(34 197 94)"].map((c, i) => (
-                <span key={i} className="h-2.5 w-2.5 rounded-[2px]" style={{ background: c }} />
-              ))}
-              <span>More</span>
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-[10px] text-muted-foreground">Skor harian: sikat pagi + sikat malam + flossing + mouthwash (max 4)</p>
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <span>Less</span>
+                {[
+                  "hsl(var(--secondary))",
+                  "color-mix(in oklab, hsl(var(--primary)) 25%, hsl(var(--card)))",
+                  "color-mix(in oklab, hsl(var(--primary)) 50%, hsl(var(--card)))",
+                  "color-mix(in oklab, hsl(var(--primary)) 75%, hsl(var(--card)))",
+                  "hsl(var(--primary))",
+                ].map((c, i) => (
+                  <span key={i} className="h-3 w-3 rounded-[3px] border border-border/40" style={{ background: c }} />
+                ))}
+                <span>More</span>
+              </div>
             </div>
           </div>
 
