@@ -160,25 +160,25 @@ function Dashboard() {
                 <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="shadeFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(var(--primary-glow))" stopOpacity={0.7} />
-                      <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                      <stop offset="0%" stopColor="var(--primary-glow)" stopOpacity={0.7} />
+                      <stop offset="50%" stopColor="var(--primary)" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.04} />
                     </linearGradient>
                     <linearGradient id="shadeLine" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="hsl(var(--primary-glow))" />
-                      <stop offset="100%" stopColor="hsl(var(--primary))" />
+                      <stop offset="0%" stopColor="var(--primary-glow)" />
+                      <stop offset="100%" stopColor="var(--primary)" />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid stroke="hsl(var(--border))" strokeOpacity={0.5} vertical={false} />
-                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} reversed
+                  <CartesianGrid stroke="var(--border)" strokeOpacity={0.6} vertical={false} />
+                  <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--muted-foreground)" fontSize={11} reversed
                     tickFormatter={(v) => SHADE_ORDER[v] ?? ""}
                     domain={[0, SHADE_ORDER.length - 1]}
                     tickLine={false}
                     axisLine={false}
                     width={36} />
                   <Tooltip
-                    cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 4" }}
+                    cursor={{ stroke: "var(--primary)", strokeWidth: 1, strokeDasharray: "4 4" }}
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
                         const p = payload[0] as any;
@@ -199,8 +199,8 @@ function Dashboard() {
                       return null;
                     }}
                   />
-                  <ReferenceLine y={1} stroke="hsl(var(--primary))" strokeDasharray="6 4" strokeOpacity={0.4}
-                    label={{ value: "Goal A2", position: "insideTopRight", fontSize: 10, fill: "hsl(var(--primary))", dy: -4 }} />
+                  <ReferenceLine y={1} stroke="var(--primary)" strokeDasharray="6 4" strokeOpacity={0.4}
+                    label={{ value: "Goal A2", position: "insideTopRight", fontSize: 10, fill: "var(--primary)", dy: -4 }} />
                   <Area
                     type="monotone"
                     dataKey="shade"
@@ -208,9 +208,10 @@ function Dashboard() {
                     strokeWidth={2.5}
                     fill="url(#shadeFill)"
                     connectNulls
-                    dot={{ r: 4, strokeWidth: 2, stroke: "hsl(var(--card))", fill: "hsl(var(--primary))" }}
-                    activeDot={{ r: 6, strokeWidth: 0, fill: "hsl(var(--primary))" }}
+                    dot={{ r: 4, strokeWidth: 2, stroke: "var(--card)", fill: "var(--primary)" }}
+                    activeDot={{ r: 6, strokeWidth: 0, fill: "var(--primary)" }}
                   />
+
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
