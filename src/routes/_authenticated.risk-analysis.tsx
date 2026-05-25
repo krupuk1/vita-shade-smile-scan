@@ -26,7 +26,12 @@ const SHADE_DESC: Record<string, string> = {
   A2: "Light Yellow — kuning sangat ringan", B2: "Putih kekuningan ringan",
   D2: "Putih keabuan", C1: "Putih keabu-abuan",
   A3: "Kuning sedang", B3: "Kuning kecokelatan ringan",
+  "A3.5": "Krem alami gelap", A4: "Krem sangat gelap",
+  B4: "Putih kekuningan gelap", C4: "Paling gelap dari semua shade",
+  C2: "Abu-abu kekuningan", C3: "Abu-abu kekuningan gelap",
+  D3: "Kuning pucat sedang", D4: "Kuning pucat",
 };
+
 
 function RiskPage() {
   const { user } = useAuth();
