@@ -26,50 +26,42 @@ export const analyzeTeeth = createServerFn({ method: "POST" })
     return data;
   })
   .handler(async ({ data }) => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY belum terkonfigurasi");
-
     const dataUrl = data.imageBase64.startsWith("data:") ? data.imageBase64 : `data:image/jpeg;base64,${data.imageBase64}`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: `Anda asisten estetika gigi. Analisis warna gigi pakai 16 VITA shade: ${VITA_SHADES.join(", ")}. Bahasa Indonesia. Jawab via function call.` },
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Analisis foto gigi ini & laporkan VITA shade, brightness, confidence, observasi, rekomendasi, hygiene score, summary." },
-              { type: "image_url", image_url: { url: dataUrl } },
-            ],
-          },
-        ],
-        tools: [{
-          type: "function",
-          function: {
-            name: "report_tooth_analysis",
-            description: "Laporkan hasil analisis gigi.",
-            parameters: {
-              type: "object",
-              properties: {
-                primaryShade: { type: "string", enum: VITA_SHADES },
-                secondaryShade: { type: "string" },
-                brightness: { type: "string", enum: ["very-light", "light", "medium", "dark"] },
-                confidence: { type: "number", minimum: 0, maximum: 100 },
-                observations: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 5 },
-                recommendations: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 5 },
-                hygieneScore: { type: "number", minimum: 0, maximum: 100 },
-                summary: { type: "string" },
-              },
-              required: ["primaryShade", "secondaryShade", "brightness", "confidence", "observations", "recommendations", "hygieneScore", "summary"],
-              additionalProperties: false,
+    const response = await aiChatCompletions({
+      messages: [
+        { role: "system", content: `Anda asisten estetika gigi. Analisis warna gigi pakai 16 VITA shade: ${VITA_SHADES.join(", ")}. Bahasa Indonesia. Jawab via function call.` },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Analisis foto gigi ini & laporkan VITA shade, brightness, confidence, observasi, rekomendasi, hygiene score, summary." },
+            { type: "image_url", image_url: { url: dataUrl } },
+          ],
+        },
+      ],
+      tools: [{
+        type: "function",
+        function: {
+          name: "report_tooth_analysis",
+          description: "Laporkan hasil analisis gigi.",
+          parameters: {
+            type: "object",
+            properties: {
+              primaryShade: { type: "string", enum: VITA_SHADES },
+              secondaryShade: { type: "string" },
+              brightness: { type: "string", enum: ["very-light", "light", "medium", "dark"] },
+              confidence: { type: "number", minimum: 0, maximum: 100 },
+              observations: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 5 },
+              recommendations: { type: "array", items: { type: "string" }, minItems: 1, maxItems: 5 },
+              hygieneScore: { type: "number", minimum: 0, maximum: 100 },
+              summary: { type: "string" },
             },
+            required: ["primaryShade", "secondaryShade", "brightness", "confidence", "observations", "recommendations", "hygieneScore", "summary"],
+            additionalProperties: false,
           },
-        }],
-        tool_choice: { type: "function", function: { name: "report_tooth_analysis" } },
-      }),
+        },
+      }],
+      tool_choice: { type: "function", function: { name: "report_tooth_analysis" } },
     });
 
     if (!response.ok) {
