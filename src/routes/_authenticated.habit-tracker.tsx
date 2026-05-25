@@ -200,24 +200,20 @@ function HabitPage() {
                 {heatmap.map((week, wi) => (
                   <div key={wi} className="flex flex-1 flex-col gap-1.5">
                     {week.map((c) => {
+                      // Empty/no log = light gray; activity 1-4 = green levels
+                      const greens = ["#dcfce7", "#86efac", "#22c55e", "#15803d"]; // tailwind green-100, 300, 500, 700
                       const bg = c.isFuture
                         ? "transparent"
                         : c.score === 0
-                        ? "hsl(var(--secondary))"
-                        : c.score === 1
-                        ? "color-mix(in oklab, hsl(var(--primary)) 25%, hsl(var(--card)))"
-                        : c.score === 2
-                        ? "color-mix(in oklab, hsl(var(--primary)) 50%, hsl(var(--card)))"
-                        : c.score === 3
-                        ? "color-mix(in oklab, hsl(var(--primary)) 75%, hsl(var(--card)))"
-                        : "hsl(var(--primary))";
-                      const textColor = c.score >= 2 ? "text-primary-foreground" : "text-foreground/60";
+                        ? "#f1f5f9" // slate-100 (abu muda)
+                        : greens[Math.min(c.score, 4) - 1];
+                      const textColor = c.score >= 3 ? "text-white" : "text-foreground/60";
                       const dateLabel = new Date(c.date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
                       const detail = c.isFuture
                         ? `${dateLabel} — belum`
                         : c.log
                         ? `${dateLabel}\nSkor: ${c.score}/4\n${c.log.brushing_morning ? "✓" : "✗"} Sikat pagi · ${c.log.brushing_night ? "✓" : "✗"} Sikat malam\n${c.log.flossing ? "✓" : "✗"} Flossing · ${c.log.mouthwash ? "✓" : "✗"} Mouthwash\nKopi: ${c.log.coffee_cups ?? 0} · Teh: ${c.log.tea_cups ?? 0} · Rokok: ${c.log.cigarettes ?? 0}`
-                        : `${dateLabel} — tidak ada log`;
+                        : `${dateLabel} — tidak ada activity`;
                       return (
                         <div
                           key={c.date}
@@ -225,7 +221,7 @@ function HabitPage() {
                           className={`flex h-8 items-center justify-center rounded-md text-[10px] font-semibold tabular-nums transition hover:scale-110 hover:ring-2 hover:ring-primary/40 ${textColor}`}
                           style={{
                             background: bg,
-                            border: c.isFuture ? "1px dashed hsl(var(--border))" : "1px solid hsl(var(--border) / 0.4)",
+                            border: c.isFuture ? "1px dashed var(--border)" : "1px solid rgba(0,0,0,0.05)",
                           }}
                         >
                           {!c.isFuture && c.dayNum}
@@ -240,19 +236,14 @@ function HabitPage() {
               <p className="text-[10px] text-muted-foreground">Skor harian: sikat pagi + sikat malam + flossing + mouthwash (max 4)</p>
               <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <span>Less</span>
-                {[
-                  "hsl(var(--secondary))",
-                  "color-mix(in oklab, hsl(var(--primary)) 25%, hsl(var(--card)))",
-                  "color-mix(in oklab, hsl(var(--primary)) 50%, hsl(var(--card)))",
-                  "color-mix(in oklab, hsl(var(--primary)) 75%, hsl(var(--card)))",
-                  "hsl(var(--primary))",
-                ].map((c, i) => (
+                {["#f1f5f9", "#dcfce7", "#86efac", "#22c55e", "#15803d"].map((c, i) => (
                   <span key={i} className="h-3 w-3 rounded-[3px] border border-border/40" style={{ background: c }} />
                 ))}
                 <span>More</span>
               </div>
             </div>
           </div>
+
 
           {/* Stat cards */}
           <div className="grid grid-cols-3 gap-3">
@@ -287,20 +278,20 @@ function HabitPage() {
             <AreaChart data={coffeeChart} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="coffeeFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--primary-glow, var(--primary)))" stopOpacity={0.75} />
-                  <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                  <stop offset="0%" stopColor="var(--primary-glow)" stopOpacity={0.75} />
+                  <stop offset="50%" stopColor="var(--primary)" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.04} />
                 </linearGradient>
                 <linearGradient id="coffeeLine" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="hsl(var(--primary-glow, var(--primary)))" />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" />
+                  <stop offset="0%" stopColor="var(--primary-glow)" />
+                  <stop offset="100%" stopColor="var(--primary)" />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="hsl(var(--border))" strokeOpacity={0.5} vertical={false} />
-              <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} allowDecimals={false} tickLine={false} axisLine={false} />
+              <CartesianGrid stroke="var(--border)" strokeOpacity={0.6} vertical={false} />
+              <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="var(--muted-foreground)" fontSize={11} allowDecimals={false} tickLine={false} axisLine={false} />
               <Tooltip
-                cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 4" }}
+                cursor={{ stroke: "var(--primary)", strokeWidth: 1, strokeDasharray: "4 4" }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const p = payload[0] as any;
@@ -320,9 +311,10 @@ function HabitPage() {
                 stroke="url(#coffeeLine)"
                 strokeWidth={2.5}
                 fill="url(#coffeeFill)"
-                dot={{ r: 4, strokeWidth: 2, stroke: "hsl(var(--card))", fill: "hsl(var(--primary))" }}
-                activeDot={{ r: 6, strokeWidth: 0, fill: "hsl(var(--primary))" }}
+                dot={{ r: 4, strokeWidth: 2, stroke: "var(--card)", fill: "var(--primary)" }}
+                activeDot={{ r: 6, strokeWidth: 0, fill: "var(--primary)" }}
               />
+
 
             </AreaChart>
           </ResponsiveContainer>

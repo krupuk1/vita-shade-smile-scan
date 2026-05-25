@@ -6,6 +6,8 @@ import { Activity, Loader2, ShieldCheck, ChevronDown, Lightbulb, Brain, Trending
 import { generateRiskAnalysis, type RiskAnalysis, type RiskItem } from "@/lib/ai-insights.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/risk-analysis")({
@@ -24,7 +26,12 @@ const SHADE_DESC: Record<string, string> = {
   A2: "Light Yellow — kuning sangat ringan", B2: "Putih kekuningan ringan",
   D2: "Putih keabuan", C1: "Putih keabu-abuan",
   A3: "Kuning sedang", B3: "Kuning kecokelatan ringan",
+  "A3.5": "Krem alami gelap", A4: "Krem sangat gelap",
+  B4: "Putih kekuningan gelap", C4: "Paling gelap dari semua shade",
+  C2: "Abu-abu kekuningan", C3: "Abu-abu kekuningan gelap",
+  D3: "Kuning pucat sedang", D4: "Kuning pucat",
 };
+
 
 function RiskPage() {
   const { user } = useAuth();
@@ -76,11 +83,26 @@ function RiskPage() {
               <p className="mb-2 text-xs font-medium text-muted-foreground">Vita Shade Scale Position</p>
               <div className="grid grid-cols-9 gap-1">
                 {["A1", "B1", "A2", "B2", "A3", "A3.5", "A4", "B4", "C4"].map((s) => (
-                  <div key={s} className={`rounded-md px-1 py-2 text-center text-[10px] font-medium ${shade === s ? "ring-2 ring-primary scale-105" : ""}`} style={{ background: SHADE_COLORS[s] ?? "#ddd", color: "#3a2a1a" }}>
-                    {s}
-                  </div>
+                  <HoverCard key={s} openDelay={80}>
+                    <HoverCardTrigger asChild>
+                      <button type="button" className={`rounded-md px-1 py-2 text-center text-[10px] font-medium transition hover:scale-105 ${shade === s ? "ring-2 ring-primary scale-105" : ""}`} style={{ background: SHADE_COLORS[s] ?? "#ddd", color: "#3a2a1a" }}>
+                        {s}
+                      </button>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-56 p-3">
+                      <div className="flex items-center gap-2">
+                        <span className="h-8 w-8 rounded-md border border-border" style={{ background: SHADE_COLORS[s] ?? "#ddd" }} />
+                        <div>
+                          <p className="text-sm font-semibold">Shade {s}</p>
+                          <p className="text-[10px] text-muted-foreground">Grup {s[0]}</p>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">{SHADE_DESC[s] ?? "VITA Classical Shade"}</p>
+                    </HoverCardContent>
+                  </HoverCard>
                 ))}
               </div>
+
             </div>
             <div className="mt-4 flex gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm text-foreground">
               <Info className="h-4 w-4 shrink-0 text-primary" />

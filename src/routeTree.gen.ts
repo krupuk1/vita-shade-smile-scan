@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
-import { Route as ShadesRouteImport } from './routes/shades'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -23,6 +22,7 @@ import { Route as AdminScansRouteImport } from './routes/admin.scans'
 import { Route as AdminRecommendationsRouteImport } from './routes/admin.recommendations'
 import { Route as AdminArticlesRouteImport } from './routes/admin.articles'
 import { Route as AdminApiDocsRouteImport } from './routes/admin.api-docs'
+import { Route as AuthenticatedShadesRouteImport } from './routes/_authenticated.shades'
 import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated.scan'
 import { Route as AuthenticatedRiskAnalysisRouteImport } from './routes/_authenticated.risk-analysis'
 import { Route as AuthenticatedRecommendationsRouteImport } from './routes/_authenticated.recommendations'
@@ -41,11 +41,6 @@ import { Route as ApiMobileAuthLoginRouteImport } from './routes/api/mobile/auth
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShadesRoute = ShadesRouteImport.update({
-  id: '/shades',
-  path: '/shades',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -106,6 +101,11 @@ const AdminApiDocsRoute = AdminApiDocsRouteImport.update({
   id: '/api-docs',
   path: '/api-docs',
   getParentRoute: () => AdminRoute,
+} as any)
+const AuthenticatedShadesRoute = AuthenticatedShadesRouteImport.update({
+  id: '/shades',
+  path: '/shades',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedScanRoute = AuthenticatedScanRouteImport.update({
   id: '/scan',
@@ -186,7 +186,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
-  '/shades': typeof ShadesRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/habit-tracker': typeof AuthenticatedHabitTrackerRoute
@@ -194,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/scan': typeof AuthenticatedScanRoute
+  '/shades': typeof AuthenticatedShadesRoute
   '/admin/api-docs': typeof AdminApiDocsRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/recommendations': typeof AdminRecommendationsRoute
@@ -214,7 +214,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/shades': typeof ShadesRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/habit-tracker': typeof AuthenticatedHabitTrackerRoute
@@ -222,6 +221,7 @@ export interface FileRoutesByTo {
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/scan': typeof AuthenticatedScanRoute
+  '/shades': typeof AuthenticatedShadesRoute
   '/admin/api-docs': typeof AdminApiDocsRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/recommendations': typeof AdminRecommendationsRoute
@@ -245,7 +245,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
-  '/shades': typeof ShadesRoute
   '/signup': typeof SignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/habit-tracker': typeof AuthenticatedHabitTrackerRoute
@@ -253,6 +252,7 @@ export interface FileRoutesById {
   '/_authenticated/recommendations': typeof AuthenticatedRecommendationsRoute
   '/_authenticated/risk-analysis': typeof AuthenticatedRiskAnalysisRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
+  '/_authenticated/shades': typeof AuthenticatedShadesRoute
   '/admin/api-docs': typeof AdminApiDocsRoute
   '/admin/articles': typeof AdminArticlesRoute
   '/admin/recommendations': typeof AdminRecommendationsRoute
@@ -276,7 +276,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
-    | '/shades'
     | '/signup'
     | '/dashboard'
     | '/habit-tracker'
@@ -284,6 +283,7 @@ export interface FileRouteTypes {
     | '/recommendations'
     | '/risk-analysis'
     | '/scan'
+    | '/shades'
     | '/admin/api-docs'
     | '/admin/articles'
     | '/admin/recommendations'
@@ -304,7 +304,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
-    | '/shades'
     | '/signup'
     | '/dashboard'
     | '/habit-tracker'
@@ -312,6 +311,7 @@ export interface FileRouteTypes {
     | '/recommendations'
     | '/risk-analysis'
     | '/scan'
+    | '/shades'
     | '/admin/api-docs'
     | '/admin/articles'
     | '/admin/recommendations'
@@ -334,7 +334,6 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/admin'
     | '/login'
-    | '/shades'
     | '/signup'
     | '/_authenticated/dashboard'
     | '/_authenticated/habit-tracker'
@@ -342,6 +341,7 @@ export interface FileRouteTypes {
     | '/_authenticated/recommendations'
     | '/_authenticated/risk-analysis'
     | '/_authenticated/scan'
+    | '/_authenticated/shades'
     | '/admin/api-docs'
     | '/admin/articles'
     | '/admin/recommendations'
@@ -365,7 +365,6 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
-  ShadesRoute: typeof ShadesRoute
   SignupRoute: typeof SignupRoute
   ApiMobileAnalyzeRoute: typeof ApiMobileAnalyzeRoute
   ApiMobileArticlesRoute: typeof ApiMobileArticlesRoute
@@ -384,13 +383,6 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/shades': {
-      id: '/shades'
-      path: '/shades'
-      fullPath: '/shades'
-      preLoaderRoute: typeof ShadesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -476,6 +468,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/api-docs'
       preLoaderRoute: typeof AdminApiDocsRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/_authenticated/shades': {
+      id: '/_authenticated/shades'
+      path: '/shades'
+      fullPath: '/shades'
+      preLoaderRoute: typeof AuthenticatedShadesRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/scan': {
       id: '/_authenticated/scan'
@@ -585,6 +584,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRecommendationsRoute: typeof AuthenticatedRecommendationsRoute
   AuthenticatedRiskAnalysisRoute: typeof AuthenticatedRiskAnalysisRoute
   AuthenticatedScanRoute: typeof AuthenticatedScanRoute
+  AuthenticatedShadesRoute: typeof AuthenticatedShadesRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -594,6 +594,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRecommendationsRoute: AuthenticatedRecommendationsRoute,
   AuthenticatedRiskAnalysisRoute: AuthenticatedRiskAnalysisRoute,
   AuthenticatedScanRoute: AuthenticatedScanRoute,
+  AuthenticatedShadesRoute: AuthenticatedShadesRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -629,7 +630,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
-  ShadesRoute: ShadesRoute,
   SignupRoute: SignupRoute,
   ApiMobileAnalyzeRoute: ApiMobileAnalyzeRoute,
   ApiMobileArticlesRoute: ApiMobileArticlesRoute,
@@ -643,13 +643,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
