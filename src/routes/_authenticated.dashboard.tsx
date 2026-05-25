@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Camera, Activity, ListChecks, Sparkles, TrendingUp, Coffee, Cigarette, Brush, CheckCircle2 } from "lucide-react";
+import { Camera, Activity, ListChecks, Sparkles, TrendingUp, Coffee, Cigarette, Brush, CheckCircle2, Info } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, CartesianGrid } from "recharts";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -12,6 +13,30 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 const SHADE_ORDER = ["A1", "A2", "A3", "A3.5", "A4", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4", "D2", "D3", "D4"];
+const SHADE_COLORS: Record<string, string> = {
+  B1: "#f4ecd6", A1: "#efe3c4", B2: "#ecdcb4", D2: "#e6d4ab",
+  A2: "#e3cf9f", C1: "#dec8a0", C2: "#d2b98c", D4: "#cdb284",
+  A3: "#c9ac7b", D3: "#c1a574", B3: "#bb9e6b", "A3.5": "#b69664",
+  B4: "#ad8b58", C3: "#a4824f", A4: "#8f6e3f", C4: "#7a5a30",
+};
+const SHADE_DESC: Record<string, string> = {
+  A1: "Putih krem — paling cerah grup A",
+  A2: "Krem alami terang",
+  A3: "Krem alami sedang",
+  "A3.5": "Krem alami gelap",
+  A4: "Krem sangat gelap",
+  B1: "Paling cerah — putih murni",
+  B2: "Putih kekuningan terang",
+  B3: "Putih kekuningan sedang",
+  B4: "Putih kekuningan gelap",
+  C1: "Abu-abu kekuningan terang",
+  C2: "Abu-abu kekuningan",
+  C3: "Abu-abu kekuningan gelap",
+  C4: "Paling gelap dari semua shade",
+  D2: "Kuning pucat terang",
+  D3: "Kuning pucat sedang",
+  D4: "Kuning pucat",
+};
 function shadeIndex(s: string) {
   const i = SHADE_ORDER.indexOf(s);
   return i >= 0 ? i : 5;
@@ -41,11 +66,39 @@ function Dashboard() {
   const lastScan = scans?.[scans.length - 1];
   const recentScans = useMemo(() => (scans ?? []).slice().reverse().slice(0, 5), [scans]);
 
-  const chartData = useMemo(() => (scans ?? []).map((s: any) => ({
-    date: new Date(s.created_at).toLocaleDateString("id-ID", { month: "short", year: "2-digit" }),
-    shade: shadeIndex(s.primary_shade),
-    shadeLabel: s.primary_shade,
-  })), [scans]);
+  // Aggregate scans into the last 6 months (avg shade index per month, latest scan label)
+  const chartData = useMemo(() => {
+    const months: { key: string; label: string; date: Date }[] = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({
+        key: `${d.getFullYear()}-${d.getMonth()}`,
+        label: d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" }),
+        date: d,
+      });
+    }
+    const buckets = new Map<string, { sum: number; n: number; last: string }>();
+    (scans ?? []).forEach((s: any) => {
+      const dt = new Date(s.created_at);
+      const k = `${dt.getFullYear()}-${dt.getMonth()}`;
+      const b = buckets.get(k) ?? { sum: 0, n: 0, last: s.primary_shade };
+      b.sum += shadeIndex(s.primary_shade);
+      b.n += 1;
+      b.last = s.primary_shade;
+      buckets.set(k, b);
+    });
+    return months.map((m) => {
+      const b = buckets.get(m.key);
+      return {
+        date: m.label,
+        shade: b ? b.sum / b.n : null,
+        shadeLabel: b?.last ?? null,
+        count: b?.n ?? 0,
+      };
+    });
+  }, [scans]);
+  const hasShadeData = chartData.some((d) => d.shade !== null);
 
   const behavior = useMemo(() => {
     const arr = habits ?? [];
@@ -85,7 +138,7 @@ function Dashboard() {
 
       {/* Quick stats */}
       <div className="mt-6 grid gap-4 md:grid-cols-4">
-        <StatCard label="Shade Saat Ini" value={lastScan?.primary_shade ?? "—"} icon={TrendingUp} />
+        <ShadeStatCard shade={lastScan?.primary_shade ?? null} />
         <StatCard label="Total Scan" value={scans?.length ?? 0} icon={Camera} />
         <StatCard label="Hygiene Score" value={lastScan?.hygiene_score ? `${Math.round(Number(lastScan.hygiene_score))}/100` : "—"} icon={Activity} />
         <StatCard label="Log Habit (7H)" value={habits?.length ?? 0} icon={ListChecks} />
@@ -94,17 +147,22 @@ function Dashboard() {
       {/* Chart + Behavior */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
-          <h2 className="text-lg font-semibold text-foreground">Tooth Color Progress</h2>
-          <p className="text-xs text-muted-foreground">Perubahan shade dari scan ke scan (lebih rendah = lebih putih)</p>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Tooth Color Progress</h2>
+              <p className="text-xs text-muted-foreground">6 bulan terakhir — lebih rendah = lebih putih</p>
+            </div>
+            <ShadeLegendButton />
+          </div>
           <div className="mt-4 h-64">
-            {chartData.length > 0 ? (
+            {hasShadeData ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="shadeFill" x1="0" y1="1" x2="0" y2="2.5">
-                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
-                      <stop offset="55%" stopColor="hsl(var(--primary))" stopOpacity={0.12} />
-                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1e-9} />
+                    <linearGradient id="shadeFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--primary-glow))" stopOpacity={0.7} />
+                      <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
                     </linearGradient>
                     <linearGradient id="shadeLine" x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor="hsl(var(--primary-glow))" />
@@ -124,21 +182,24 @@ function Dashboard() {
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
                         const p = payload[0] as any;
+                        const shadeLabel = p?.payload?.shadeLabel;
+                        if (!shadeLabel) return null;
                         return (
                           <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-xl">
                             <p className="text-[11px] text-muted-foreground">{label}</p>
                             <div className="mt-1 flex items-center gap-2">
-                              <span className="inline-block h-2 w-2 rounded-full" style={{ background: "hsl(var(--primary))" }} />
-                              <p className="text-sm font-semibold text-foreground">Shade {p?.payload?.shadeLabel ?? "—"}</p>
+                              <span className="inline-block h-3 w-3 rounded-sm border border-border" style={{ background: SHADE_COLORS[shadeLabel] }} />
+                              <p className="text-sm font-semibold text-foreground">Shade {shadeLabel}</p>
                             </div>
-                            <p className="mt-0.5 text-[11px] text-muted-foreground">{(p?.payload?.shade ?? 5) <= 1 ? "Mendekati goal" : "Perlu perbaikan"}</p>
+                            <p className="mt-0.5 text-[11px] text-muted-foreground">{SHADE_DESC[shadeLabel] ?? ""}</p>
+                            <p className="mt-0.5 text-[10px] text-muted-foreground">{p?.payload?.count} scan bulan ini</p>
                           </div>
                         );
                       }
                       return null;
                     }}
                   />
-                  <ReferenceLine y={1} stroke="hsl(var(--primary))" strokeDasharray="6 4" strokeOpacity={2e-1}
+                  <ReferenceLine y={1} stroke="hsl(var(--primary))" strokeDasharray="6 4" strokeOpacity={0.4}
                     label={{ value: "Goal A2", position: "insideTopRight", fontSize: 10, fill: "hsl(var(--primary))", dy: -4 }} />
                   <Area
                     type="monotone"
@@ -146,6 +207,7 @@ function Dashboard() {
                     stroke="url(#shadeLine)"
                     strokeWidth={2.5}
                     fill="url(#shadeFill)"
+                    connectNulls
                     dot={{ r: 4, strokeWidth: 2, stroke: "hsl(var(--card))", fill: "hsl(var(--primary))" }}
                     activeDot={{ r: 6, strokeWidth: 0, fill: "hsl(var(--primary))" }}
                   />
@@ -156,6 +218,32 @@ function Dashboard() {
                 Belum ada data scan. <Link to="/scan" className="ml-1 text-primary hover:underline">Mulai →</Link>
               </div>
             )}
+          </div>
+          {/* Inline shade legend strip */}
+          <div className="mt-4 border-t border-border/40 pt-3">
+            <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Skala VITA Shade (cerah → gelap)</p>
+            <div className="flex flex-wrap gap-1.5">
+              {SHADE_ORDER.map((s) => (
+                <HoverCard key={s} openDelay={100}>
+                  <HoverCardTrigger asChild>
+                    <button className="flex items-center gap-1 rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold text-foreground transition hover:border-primary/40 hover:bg-primary/5">
+                      <span className="h-2.5 w-2.5 rounded-full border border-foreground/10" style={{ background: SHADE_COLORS[s] }} />
+                      {s}
+                    </button>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-56 p-3">
+                    <div className="flex items-center gap-2">
+                      <span className="h-8 w-8 rounded-md border border-border" style={{ background: SHADE_COLORS[s] }} />
+                      <div>
+                        <p className="text-sm font-semibold">Shade {s}</p>
+                        <p className="text-[10px] text-muted-foreground">Grup {s[0]}</p>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">{SHADE_DESC[s]}</p>
+                  </HoverCardContent>
+                </HoverCard>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -224,6 +312,71 @@ function StatCard({ label, value, icon: Icon }: { label: string; value: string |
       </div>
       <p className="mt-2 text-2xl font-bold text-foreground">{value}</p>
     </div>
+  );
+}
+
+function ShadeStatCard({ shade }: { shade: string | null }) {
+  return (
+    <HoverCard openDelay={100}>
+      <HoverCardTrigger asChild>
+        <button className="text-left rounded-2xl bg-card p-5 transition hover:ring-2 hover:ring-primary/30" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="flex items-center justify-between">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Shade Saat Ini</p>
+            <TrendingUp className="h-4 w-4 text-primary" />
+          </div>
+          <div className="mt-2 flex items-center gap-2">
+            <p className="text-2xl font-bold text-foreground">{shade ?? "—"}</p>
+            {shade && SHADE_COLORS[shade] && (
+              <span className="h-6 w-6 rounded-md border border-border" style={{ background: SHADE_COLORS[shade] }} />
+            )}
+          </div>
+          {shade && SHADE_DESC[shade] && (
+            <p className="mt-1 line-clamp-1 text-[10px] text-muted-foreground">{SHADE_DESC[shade]}</p>
+          )}
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-72 p-3">
+        <p className="text-xs font-semibold text-foreground">Penjelasan Shade</p>
+        {shade ? (
+          <>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="h-9 w-9 rounded-md border border-border" style={{ background: SHADE_COLORS[shade] ?? "#ddd" }} />
+              <div>
+                <p className="text-sm font-semibold">Shade {shade}</p>
+                <p className="text-[10px] text-muted-foreground">Grup {shade[0]}</p>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">{SHADE_DESC[shade] ?? "—"}</p>
+          </>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground">Belum ada scan. Lakukan scan pertama untuk melihat shade Anda.</p>
+        )}
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
+function ShadeLegendButton() {
+  return (
+    <HoverCard openDelay={100}>
+      <HoverCardTrigger asChild>
+        <button className="inline-flex items-center gap-1 rounded-full border border-border bg-background/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground">
+          <Info className="h-3 w-3" /> Legend
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-72 p-3">
+        <p className="text-xs font-semibold">VITA Shade Guide</p>
+        <p className="mt-1 text-[10px] text-muted-foreground">A = krem · B = putih kekuningan · C = abu kekuningan · D = kuning pucat</p>
+        <div className="mt-2 grid grid-cols-4 gap-1.5">
+          {SHADE_ORDER.map((s) => (
+            <div key={s} className="flex flex-col items-center gap-0.5">
+              <span className="h-6 w-full rounded-md border border-border" style={{ background: SHADE_COLORS[s] }} title={SHADE_DESC[s]} />
+              <span className="text-[10px] font-semibold text-foreground">{s}</span>
+            </div>
+          ))}
+        </div>
+      </HoverCardContent>
+    </HoverCard>
   );
 }
 

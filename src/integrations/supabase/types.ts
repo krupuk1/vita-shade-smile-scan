@@ -207,6 +207,7 @@ export type Database = {
           created_at: string
           hygiene_score: number | null
           id: string
+          image_url: string | null
           method: string
           observations: Json | null
           primary_shade: string
@@ -221,6 +222,7 @@ export type Database = {
           created_at?: string
           hygiene_score?: number | null
           id?: string
+          image_url?: string | null
           method?: string
           observations?: Json | null
           primary_shade: string
@@ -235,6 +237,7 @@ export type Database = {
           created_at?: string
           hygiene_score?: number | null
           id?: string
+          image_url?: string | null
           method?: string
           observations?: Json | null
           primary_shade?: string

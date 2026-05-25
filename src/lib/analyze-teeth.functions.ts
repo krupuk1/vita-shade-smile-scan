@@ -1,11 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { aiChatCompletions } from "@/lib/ai-provider.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const VITA_SHADES = [
   "B1", "A1", "B2", "D2", "A2", "C1", "C2", "D4",
   "A3", "D3", "B3", "A3.5", "B4", "C3", "A4", "C4",
 ];
+
+const SCAN_BUCKET = "bucket-tintifylab3";
 
 export interface ToothAnalysis {
   primaryShade: string;
@@ -75,11 +78,40 @@ export const analyzeTeeth = createServerFn({ method: "POST" })
     return JSON.parse(args) as ToothAnalysis;
   });
 
+async function uploadScanImage(userId: string, dataUrl: string): Promise<string | null> {
+  try {
+    const m = /^data:(image\/[a-zA-Z+]+);base64,(.+)$/.exec(dataUrl);
+    if (!m) return null;
+    const mime = m[1];
+    const ext = mime.split("/")[1].replace("jpeg", "jpg");
+    const bytes = Buffer.from(m[2], "base64");
+    const path = `scans/${userId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabaseAdmin.storage.from(SCAN_BUCKET).upload(path, bytes, {
+      contentType: mime,
+      upsert: false,
+    });
+    if (error) {
+      console.error("[saveScan] upload failed", error);
+      return null;
+    }
+    const { data: pub } = supabaseAdmin.storage.from(SCAN_BUCKET).getPublicUrl(path);
+    return pub.publicUrl;
+  } catch (e) {
+    console.error("[saveScan] upload exception", e);
+    return null;
+  }
+}
+
 export const saveScan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { result: ToothAnalysis; method: string }) => data)
+  .inputValidator((data: { result: ToothAnalysis; method: string; imageBase64?: string }) => data)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
+    let image_url: string | null = null;
+    if (data.imageBase64) {
+      const dataUrl = data.imageBase64.startsWith("data:") ? data.imageBase64 : `data:image/jpeg;base64,${data.imageBase64}`;
+      image_url = await uploadScanImage(userId, dataUrl);
+    }
     const { error } = await supabase.from("tooth_scans").insert({
       user_id: userId,
       method: data.method,
@@ -91,7 +123,8 @@ export const saveScan = createServerFn({ method: "POST" })
       observations: data.result.observations,
       recommendations: data.result.recommendations,
       summary: data.result.summary,
-    });
+      image_url,
+    } as any);
     if (error) throw new Error(error.message);
-    return { ok: true };
+    return { ok: true, image_url };
   });

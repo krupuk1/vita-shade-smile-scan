@@ -40,7 +40,7 @@ function ScanPage() {
       const base64 = await fileToBase64(file);
       setPreview(base64);
       const result = await analyzeFn({ data: { imageBase64: base64 } });
-      await saveFn({ data: { result, method } }).catch(() => {});
+      await saveFn({ data: { result, method, imageBase64: base64 } }).catch(() => {});
       return result;
     },
     onError: (err: Error) => toast.error(err.message || "Analisis gagal"),

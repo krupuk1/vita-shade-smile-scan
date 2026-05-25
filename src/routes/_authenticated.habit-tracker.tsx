@@ -75,31 +75,45 @@ function HabitPage() {
   }, [logs]);
 
   const coffeeChart = useMemo(() => {
-    const arr = (logs ?? []).slice(0, 7).reverse();
-    return arr.map((l: any) => ({ date: new Date(l.log_date).toLocaleDateString("id-ID", { weekday: "short" }), cups: l.coffee_cups ?? 0 }));
+    const map = new Map<string, any>();
+    (logs ?? []).forEach((l: any) => map.set(l.log_date, l));
+    const days: { date: string; cups: number; full: string }[] = [];
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().split("T")[0];
+      const l = map.get(key);
+      days.push({
+        date: d.toLocaleDateString("id-ID", { weekday: "short" }),
+        cups: l?.coffee_cups ?? 0,
+        full: d.toLocaleDateString("id-ID", { day: "numeric", month: "short" }),
+      });
+    }
+    return days;
   }, [logs]);
 
-  // Heatmap (last ~30 days, aligned by weekday columns Mon..Sun)
+  // Heatmap (last ~30 days). For each cell we keep the log details for tooltip.
   const heatmap = useMemo(() => {
-    const map = new Map<string, number>();
-    (logs ?? []).forEach((l: any) => {
-      const s = (l.brushing_morning ? 1 : 0) + (l.brushing_night ? 1 : 0) + (l.flossing ? 1 : 0) + (l.mouthwash ? 1 : 0);
-      map.set(l.log_date, s);
-    });
-    // Build grid: start from Monday of (today - 4 weeks), 5 weeks * 7 days = 35 cells
+    const map = new Map<string, any>();
+    (logs ?? []).forEach((l: any) => map.set(l.log_date, l));
     const today = new Date();
     const dow = (today.getDay() + 6) % 7; // 0 = Mon
     const start = new Date(today);
     start.setDate(today.getDate() - dow - 28); // 4 weeks back to Monday
-    const weeks: { date: string; score: number; isFuture: boolean }[][] = [];
+    const weeks: { date: string; score: number; isFuture: boolean; log: any | null; dayNum: number }[][] = [];
     for (let w = 0; w < 5; w++) {
-      const row: { date: string; score: number; isFuture: boolean }[] = [];
+      const row: { date: string; score: number; isFuture: boolean; log: any | null; dayNum: number }[] = [];
       for (let d = 0; d < 7; d++) {
         const day = new Date(start);
         day.setDate(start.getDate() + w * 7 + d);
         const key = day.toISOString().split("T")[0];
         const isFuture = day > today;
-        row.push({ date: key, score: map.get(key) ?? 0, isFuture });
+        const log = map.get(key) ?? null;
+        const score = log
+          ? (log.brushing_morning ? 1 : 0) + (log.brushing_night ? 1 : 0) + (log.flossing ? 1 : 0) + (log.mouthwash ? 1 : 0)
+          : 0;
+        row.push({ date: key, score, isFuture, log, dayNum: day.getDate() });
       }
       weeks.push(row);
     }
@@ -174,40 +188,69 @@ function HabitPage() {
               <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">📅 Activity Heatmap</h2>
               <span className="text-xs text-muted-foreground">30 hari terakhir</span>
             </div>
-            <div className="mt-4">
-              <div className="grid grid-cols-7 gap-1.5 pb-1.5 text-[10px] text-muted-foreground">
+            <div className="mt-4 flex gap-2">
+              {/* Weekday labels column */}
+              <div className="flex flex-col gap-1.5 pt-0.5 text-[10px] font-medium text-muted-foreground">
                 {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((d) => (
-                  <div key={d} className="text-center">{d}</div>
+                  <div key={d} className="flex h-8 w-7 items-center justify-end pr-1">{d}</div>
                 ))}
               </div>
-              <div className="space-y-1.5">
+              {/* Grid: columns are weeks */}
+              <div className="flex flex-1 gap-1.5">
                 {heatmap.map((week, wi) => (
-                  <div key={wi} className="grid grid-cols-7 gap-1.5">
-                    {week.map((c) => (
-                      <div
-                        key={c.date}
-                        title={c.isFuture ? c.date : `${c.date}: ${c.score}/4`}
-                        className="aspect-square rounded-[4px]"
-                        style={{
-                          background: c.isFuture ? "transparent" :
-                            c.score === 0 ? "hsl(var(--secondary))" :
-                            c.score === 1 ? "rgb(187 247 208)" :
-                            c.score === 2 ? "rgb(134 239 172)" :
-                            c.score === 3 ? "rgb(74 222 128)" : "rgb(34 197 94)",
-                          border: c.isFuture ? "1px dashed hsl(var(--border))" : "none",
-                        }}
-                      />
-                    ))}
+                  <div key={wi} className="flex flex-1 flex-col gap-1.5">
+                    {week.map((c) => {
+                      const bg = c.isFuture
+                        ? "transparent"
+                        : c.score === 0
+                        ? "hsl(var(--secondary))"
+                        : c.score === 1
+                        ? "color-mix(in oklab, hsl(var(--primary)) 25%, hsl(var(--card)))"
+                        : c.score === 2
+                        ? "color-mix(in oklab, hsl(var(--primary)) 50%, hsl(var(--card)))"
+                        : c.score === 3
+                        ? "color-mix(in oklab, hsl(var(--primary)) 75%, hsl(var(--card)))"
+                        : "hsl(var(--primary))";
+                      const textColor = c.score >= 2 ? "text-primary-foreground" : "text-foreground/60";
+                      const dateLabel = new Date(c.date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+                      const detail = c.isFuture
+                        ? `${dateLabel} — belum`
+                        : c.log
+                        ? `${dateLabel}\nSkor: ${c.score}/4\n${c.log.brushing_morning ? "✓" : "✗"} Sikat pagi · ${c.log.brushing_night ? "✓" : "✗"} Sikat malam\n${c.log.flossing ? "✓" : "✗"} Flossing · ${c.log.mouthwash ? "✓" : "✗"} Mouthwash\nKopi: ${c.log.coffee_cups ?? 0} · Teh: ${c.log.tea_cups ?? 0} · Rokok: ${c.log.cigarettes ?? 0}`
+                        : `${dateLabel} — tidak ada log`;
+                      return (
+                        <div
+                          key={c.date}
+                          title={detail}
+                          className={`flex h-8 items-center justify-center rounded-md text-[10px] font-semibold tabular-nums transition hover:scale-110 hover:ring-2 hover:ring-primary/40 ${textColor}`}
+                          style={{
+                            background: bg,
+                            border: c.isFuture ? "1px dashed hsl(var(--border))" : "1px solid hsl(var(--border) / 0.4)",
+                          }}
+                        >
+                          {!c.isFuture && c.dayNum}
+                        </div>
+                      );
+                    })}
                   </div>
                 ))}
               </div>
             </div>
-            <div className="mt-3 flex items-center justify-end gap-1 text-[10px] text-muted-foreground">
-              <span>Less</span>
-              {["hsl(var(--secondary))", "rgb(187 247 208)", "rgb(134 239 172)", "rgb(74 222 128)", "rgb(34 197 94)"].map((c, i) => (
-                <span key={i} className="h-2.5 w-2.5 rounded-[2px]" style={{ background: c }} />
-              ))}
-              <span>More</span>
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-[10px] text-muted-foreground">Skor harian: sikat pagi + sikat malam + flossing + mouthwash (max 4)</p>
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                <span>Less</span>
+                {[
+                  "hsl(var(--secondary))",
+                  "color-mix(in oklab, hsl(var(--primary)) 25%, hsl(var(--card)))",
+                  "color-mix(in oklab, hsl(var(--primary)) 50%, hsl(var(--card)))",
+                  "color-mix(in oklab, hsl(var(--primary)) 75%, hsl(var(--card)))",
+                  "hsl(var(--primary))",
+                ].map((c, i) => (
+                  <span key={i} className="h-3 w-3 rounded-[3px] border border-border/40" style={{ background: c }} />
+                ))}
+                <span>More</span>
+              </div>
             </div>
           </div>
 
@@ -244,9 +287,13 @@ function HabitPage() {
             <AreaChart data={coffeeChart} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="coffeeFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
-                  <stop offset="60%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1e-9} />
+                  <stop offset="0%" stopColor="hsl(var(--primary-glow, var(--primary)))" stopOpacity={0.75} />
+                  <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="coffeeLine" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="hsl(var(--primary-glow, var(--primary)))" />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="hsl(var(--border))" strokeOpacity={0.5} vertical={false} />
@@ -254,12 +301,13 @@ function HabitPage() {
               <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} allowDecimals={false} tickLine={false} axisLine={false} />
               <Tooltip
                 cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 4" }}
-                content={({ active, payload, label }) => {
+                content={({ active, payload }) => {
                   if (active && payload && payload.length) {
+                    const p = payload[0] as any;
                     return (
                       <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-xl">
-                        <p className="text-[11px] text-muted-foreground">{label}</p>
-                        <p className="mt-0.5 text-sm font-semibold text-foreground">{payload[0].value} cups</p>
+                        <p className="text-[11px] text-muted-foreground">{p?.payload?.full}</p>
+                        <p className="mt-0.5 text-sm font-semibold text-foreground">{p.value} cups kopi</p>
                       </div>
                     );
                   }
@@ -269,12 +317,13 @@ function HabitPage() {
               <Area
                 type="monotone"
                 dataKey="cups"
-                stroke="hsl(var(--primary))"
+                stroke="url(#coffeeLine)"
                 strokeWidth={2.5}
                 fill="url(#coffeeFill)"
                 dot={{ r: 4, strokeWidth: 2, stroke: "hsl(var(--card))", fill: "hsl(var(--primary))" }}
                 activeDot={{ r: 6, strokeWidth: 0, fill: "hsl(var(--primary))" }}
               />
+
             </AreaChart>
           </ResponsiveContainer>
         </div>

@@ -4,6 +4,7 @@ import {
   PlayCircle, ScanLine, BookOpenCheck, Star,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import heroImage from "@/assets/hero-tooth.jpg";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -83,11 +84,11 @@ function Landing() {
             </div>
           </div>
 
-          {/* Mascot */}
+          {/* Hero image */}
           <div className="relative flex items-center justify-center">
-            <div className="absolute inset-0 m-auto h-72 w-72 rounded-full blur-3xl opacity-60" style={{ background: "var(--gradient-primary)" }} />
-            <div className="relative grid h-72 w-72 place-items-center rounded-full border border-primary/30 bg-card/60 backdrop-blur" style={{ boxShadow: "var(--shadow-glow)" }}>
-              <div className="text-[120px] leading-none drop-shadow-lg">🦷</div>
+            <div className="absolute inset-0 m-auto h-72 w-72 rounded-full blur-3xl opacity-50" style={{ background: "var(--gradient-primary)" }} />
+            <div className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-card/60 backdrop-blur" style={{ boxShadow: "var(--shadow-glow)" }}>
+              <img src={heroImage} alt="Tintify — maskot gigi cerdas dengan sikat gigi" width={1024} height={1024} className="h-80 w-80 object-cover md:h-96 md:w-96" />
             </div>
             <span className="absolute -right-2 top-6 rounded-full bg-card px-3 py-1.5 text-xs font-medium shadow-md">✦ Smart Scan</span>
             <span className="absolute -left-2 bottom-12 rounded-full bg-card px-3 py-1.5 text-xs font-medium shadow-md">✦ AI Insight</span>

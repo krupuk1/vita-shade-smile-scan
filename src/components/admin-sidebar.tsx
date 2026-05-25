@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Shield, LayoutDashboard, Users, Camera, Sparkles, ArrowLeft, LogOut, FileText, Settings, Code2 } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Camera, Sparkles, ArrowLeft, LogOut, FileText, Settings, Code2, Palette } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
@@ -21,6 +21,7 @@ export function AdminSidebar() {
   ];
   const data = [
     { title: "Scan", url: "/admin/scans", icon: Camera },
+    { title: "VITA Shades", url: "/admin/shades", icon: Palette },
     { title: "Rekomendasi AI", url: "/admin/recommendations", icon: Sparkles },
   ];
   const system = [
