@@ -20,7 +20,7 @@ export function AppSidebar() {
     { title: "Risk Analysis", url: "/risk-analysis", icon: Activity },
     { title: "Recommendations", url: "/recommendations", icon: Sparkles },
     { title: "Habit Tracker", url: "/habit-tracker", icon: ListChecks },
-    { title: "VITA Shades", url: "/shades", icon: Palette },
+    { title: "VITA Shades", url: "/shades" as const, icon: Palette },
     { title: "Profile", url: "/profile", icon: User },
   ];
 
