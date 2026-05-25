@@ -1,0 +1,1 @@
+ALTER TABLE public.tooth_scans ADD COLUMN IF NOT EXISTS image_url TEXT;
