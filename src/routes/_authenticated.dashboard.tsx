@@ -99,22 +99,56 @@ function Dashboard() {
           <div className="mt-4 h-64">
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
+                <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="shadeFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    <linearGradient id="shadeFill" x1="0" y1="1" x2="0" y2="2.5">
+                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
+                      <stop offset="55%" stopColor="hsl(var(--primary))" stopOpacity={0.12} />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1e-9} />
+                    </linearGradient>
+                    <linearGradient id="shadeLine" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="hsl(var(--primary-glow))" />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                  <CartesianGrid stroke="hsl(var(--border))" strokeOpacity={0.5} vertical={false} />
+                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} reversed
                     tickFormatter={(v) => SHADE_ORDER[v] ?? ""}
-                    domain={[0, SHADE_ORDER.length - 1]} />
+                    domain={[0, SHADE_ORDER.length - 1]}
+                    tickLine={false}
+                    axisLine={false}
+                    width={36} />
                   <Tooltip
-                    formatter={(_v, _n, p: any) => [p.payload.shadeLabel, "Shade"]}
-                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-                  <ReferenceLine y={1} stroke="hsl(var(--primary))" strokeDasharray="4 4" label={{ value: "Goal A2", fontSize: 10, fill: "hsl(var(--primary))" }} />
-                  <Area type="monotone" dataKey="shade" stroke="hsl(var(--primary))" strokeWidth={2.5} fill="url(#shadeFill)" />
+                    cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 4" }}
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        const p = payload[1] as any; // primary shade
+                        return (
+                          <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-xl">
+                            <p className="text-[11px] text-muted-foreground">{label}</p>
+                            <div className="mt-1 flex items-center gap-2">
+                              <span className="inline-block h-2 w-2 rounded-full" style={{ background: "hsl(var(--primary))" }} />
+                              <p className="text-sm font-semibold text-foreground">Shade {p?.payload?.shadeLabel ?? "—"}</p>
+                            </div>
+                            <p className="mt-0.5 text-[11px] text-muted-foreground">{p?.payload?.shade <= 1 ? "Mendekati goal" : "Perlu perbaikan"}</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <ReferenceLine y={1} stroke="hsl(var(--primary))" strokeDasharray="6 4" strokeOpacity={2e-1}
+                    label={{ value: "Goal A2", position: "insideTopRight", fontSize: 10, fill: "hsl(var(--primary))", dy: -4 }} />
+                  <Area
+                    type="monotone"
+                    dataKey="shade"
+                    stroke="url(#shadeLine)"
+                    strokeWidth={2.5}
+                    fill="url(#shadeFill)"
+                    dot={{ r: 4, strokeWidth: 2, stroke: "hsl(var(--card))", fill: "hsl(var(--primary))" }}
+                    activeDot={{ r: 6, strokeWidth: 0, fill: "hsl(var(--primary))" }}
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
