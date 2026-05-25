@@ -123,7 +123,7 @@ function Dashboard() {
                     cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 4" }}
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
-                        const p = payload[1] as any;
+                        const p = payload[0] as any;
                         return (
                           <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-xl">
                             <p className="text-[11px] text-muted-foreground">{label}</p>
