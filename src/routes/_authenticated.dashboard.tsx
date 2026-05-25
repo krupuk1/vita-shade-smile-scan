@@ -147,17 +147,22 @@ function Dashboard() {
       {/* Chart + Behavior */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
-          <h2 className="text-lg font-semibold text-foreground">Tooth Color Progress</h2>
-          <p className="text-xs text-muted-foreground">Perubahan shade dari scan ke scan (lebih rendah = lebih putih)</p>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Tooth Color Progress</h2>
+              <p className="text-xs text-muted-foreground">6 bulan terakhir — lebih rendah = lebih putih</p>
+            </div>
+            <ShadeLegendButton />
+          </div>
           <div className="mt-4 h-64">
-            {chartData.length > 0 ? (
+            {hasShadeData ? (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="shadeFill" x1="0" y1="1" x2="0" y2="2.5">
-                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
-                      <stop offset="55%" stopColor="hsl(var(--primary))" stopOpacity={0.12} />
-                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1e-9} />
+                    <linearGradient id="shadeFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(var(--primary-glow))" stopOpacity={0.7} />
+                      <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
                     </linearGradient>
                     <linearGradient id="shadeLine" x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor="hsl(var(--primary-glow))" />
@@ -177,21 +182,24 @@ function Dashboard() {
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
                         const p = payload[0] as any;
+                        const shadeLabel = p?.payload?.shadeLabel;
+                        if (!shadeLabel) return null;
                         return (
                           <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-xl">
                             <p className="text-[11px] text-muted-foreground">{label}</p>
                             <div className="mt-1 flex items-center gap-2">
-                              <span className="inline-block h-2 w-2 rounded-full" style={{ background: "hsl(var(--primary))" }} />
-                              <p className="text-sm font-semibold text-foreground">Shade {p?.payload?.shadeLabel ?? "—"}</p>
+                              <span className="inline-block h-3 w-3 rounded-sm border border-border" style={{ background: SHADE_COLORS[shadeLabel] }} />
+                              <p className="text-sm font-semibold text-foreground">Shade {shadeLabel}</p>
                             </div>
-                            <p className="mt-0.5 text-[11px] text-muted-foreground">{(p?.payload?.shade ?? 5) <= 1 ? "Mendekati goal" : "Perlu perbaikan"}</p>
+                            <p className="mt-0.5 text-[11px] text-muted-foreground">{SHADE_DESC[shadeLabel] ?? ""}</p>
+                            <p className="mt-0.5 text-[10px] text-muted-foreground">{p?.payload?.count} scan bulan ini</p>
                           </div>
                         );
                       }
                       return null;
                     }}
                   />
-                  <ReferenceLine y={1} stroke="hsl(var(--primary))" strokeDasharray="6 4" strokeOpacity={2e-1}
+                  <ReferenceLine y={1} stroke="hsl(var(--primary))" strokeDasharray="6 4" strokeOpacity={0.4}
                     label={{ value: "Goal A2", position: "insideTopRight", fontSize: 10, fill: "hsl(var(--primary))", dy: -4 }} />
                   <Area
                     type="monotone"
@@ -199,6 +207,7 @@ function Dashboard() {
                     stroke="url(#shadeLine)"
                     strokeWidth={2.5}
                     fill="url(#shadeFill)"
+                    connectNulls
                     dot={{ r: 4, strokeWidth: 2, stroke: "hsl(var(--card))", fill: "hsl(var(--primary))" }}
                     activeDot={{ r: 6, strokeWidth: 0, fill: "hsl(var(--primary))" }}
                   />
@@ -209,6 +218,32 @@ function Dashboard() {
                 Belum ada data scan. <Link to="/scan" className="ml-1 text-primary hover:underline">Mulai →</Link>
               </div>
             )}
+          </div>
+          {/* Inline shade legend strip */}
+          <div className="mt-4 border-t border-border/40 pt-3">
+            <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Skala VITA Shade (cerah → gelap)</p>
+            <div className="flex flex-wrap gap-1.5">
+              {SHADE_ORDER.map((s) => (
+                <HoverCard key={s} openDelay={100}>
+                  <HoverCardTrigger asChild>
+                    <button className="flex items-center gap-1 rounded-full border border-border bg-background/60 px-2 py-0.5 text-[10px] font-semibold text-foreground transition hover:border-primary/40 hover:bg-primary/5">
+                      <span className="h-2.5 w-2.5 rounded-full border border-foreground/10" style={{ background: SHADE_COLORS[s] }} />
+                      {s}
+                    </button>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="w-56 p-3">
+                    <div className="flex items-center gap-2">
+                      <span className="h-8 w-8 rounded-md border border-border" style={{ background: SHADE_COLORS[s] }} />
+                      <div>
+                        <p className="text-sm font-semibold">Shade {s}</p>
+                        <p className="text-[10px] text-muted-foreground">Grup {s[0]}</p>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">{SHADE_DESC[s]}</p>
+                  </HoverCardContent>
+                </HoverCard>
+              ))}
+            </div>
           </div>
         </div>
 
