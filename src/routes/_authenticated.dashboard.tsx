@@ -315,6 +315,71 @@ function StatCard({ label, value, icon: Icon }: { label: string; value: string |
   );
 }
 
+function ShadeStatCard({ shade }: { shade: string | null }) {
+  return (
+    <HoverCard openDelay={100}>
+      <HoverCardTrigger asChild>
+        <button className="text-left rounded-2xl bg-card p-5 transition hover:ring-2 hover:ring-primary/30" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="flex items-center justify-between">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">Shade Saat Ini</p>
+            <TrendingUp className="h-4 w-4 text-primary" />
+          </div>
+          <div className="mt-2 flex items-center gap-2">
+            <p className="text-2xl font-bold text-foreground">{shade ?? "—"}</p>
+            {shade && SHADE_COLORS[shade] && (
+              <span className="h-6 w-6 rounded-md border border-border" style={{ background: SHADE_COLORS[shade] }} />
+            )}
+          </div>
+          {shade && SHADE_DESC[shade] && (
+            <p className="mt-1 line-clamp-1 text-[10px] text-muted-foreground">{SHADE_DESC[shade]}</p>
+          )}
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-72 p-3">
+        <p className="text-xs font-semibold text-foreground">Penjelasan Shade</p>
+        {shade ? (
+          <>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="h-9 w-9 rounded-md border border-border" style={{ background: SHADE_COLORS[shade] ?? "#ddd" }} />
+              <div>
+                <p className="text-sm font-semibold">Shade {shade}</p>
+                <p className="text-[10px] text-muted-foreground">Grup {shade[0]}</p>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">{SHADE_DESC[shade] ?? "—"}</p>
+          </>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground">Belum ada scan. Lakukan scan pertama untuk melihat shade Anda.</p>
+        )}
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
+function ShadeLegendButton() {
+  return (
+    <HoverCard openDelay={100}>
+      <HoverCardTrigger asChild>
+        <button className="inline-flex items-center gap-1 rounded-full border border-border bg-background/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground">
+          <Info className="h-3 w-3" /> Legend
+        </button>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-72 p-3">
+        <p className="text-xs font-semibold">VITA Shade Guide</p>
+        <p className="mt-1 text-[10px] text-muted-foreground">A = krem · B = putih kekuningan · C = abu kekuningan · D = kuning pucat</p>
+        <div className="mt-2 grid grid-cols-4 gap-1.5">
+          {SHADE_ORDER.map((s) => (
+            <div key={s} className="flex flex-col items-center gap-0.5">
+              <span className="h-6 w-full rounded-md border border-border" style={{ background: SHADE_COLORS[s] }} title={SHADE_DESC[s]} />
+              <span className="text-[10px] font-semibold text-foreground">{s}</span>
+            </div>
+          ))}
+        </div>
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
 function StepCard({ n, title, desc, to }: { n: number; title: string; desc: string; to: string }) {
   return (
     <Link to={to} className="group rounded-2xl bg-card p-5 transition hover:border-primary/40 border border-transparent" style={{ boxShadow: "var(--shadow-card)" }}>
