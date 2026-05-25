@@ -123,7 +123,7 @@ function Dashboard() {
                     cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 4" }}
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
-                        const p = payload[1] as any; // primary shade
+                        const p = payload[1] as any;
                         return (
                           <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-xl">
                             <p className="text-[11px] text-muted-foreground">{label}</p>
@@ -131,7 +131,7 @@ function Dashboard() {
                               <span className="inline-block h-2 w-2 rounded-full" style={{ background: "hsl(var(--primary))" }} />
                               <p className="text-sm font-semibold text-foreground">Shade {p?.payload?.shadeLabel ?? "—"}</p>
                             </div>
-                            <p className="mt-0.5 text-[11px] text-muted-foreground">{p?.payload?.shade <= 1 ? "Mendekati goal" : "Perlu perbaikan"}</p>
+                            <p className="mt-0.5 text-[11px] text-muted-foreground">{(p?.payload?.shade ?? 5) <= 1 ? "Mendekati goal" : "Perlu perbaikan"}</p>
                           </div>
                         );
                       }
