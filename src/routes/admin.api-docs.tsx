@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Code2, Lock, Unlock } from "lucide-react";
+import { Code2, Download, Lock, Unlock } from "lucide-react";
 
 export const Route = createFileRoute("/admin/api-docs")({
   component: ApiDocs,
@@ -73,16 +73,37 @@ const groups: { title: string; endpoints: Endpoint[] }[] = [
 
 function ApiDocs() {
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "https://your-app.lovable.app";
+
+  function downloadMarkdown() {
+    const md = buildMarkdown(baseUrl);
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "tintify-mobile-api.md";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="mx-auto max-w-5xl p-6 md:p-10">
       <header className="mb-8 flex items-center gap-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white">
           <Code2 className="h-5 w-5" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-semibold tracking-tight">Mobile API Documentation</h1>
           <p className="mt-1 text-sm text-muted-foreground">REST endpoints untuk aplikasi mobile Tintify.</p>
         </div>
+        <button
+          onClick={downloadMarkdown}
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+          style={{ background: "var(--gradient-primary)" }}
+        >
+          <Download className="h-4 w-4" /> Download .md
+        </button>
       </header>
 
       <section className="mb-8 rounded-2xl border border-border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
@@ -156,4 +177,42 @@ function methodColor(m: string) {
     case "DELETE": return "bg-rose-600";
     default: return "bg-slate-600";
   }
+}
+
+function buildMarkdown(baseUrl: string): string {
+  const lines: string[] = [];
+  lines.push(`# Tintify Mobile API`, ``);
+  lines.push(`**Base URL:** \`${baseUrl}\``, ``);
+  lines.push(`## Authentication`, ``);
+  lines.push(`Endpoint dengan tanda \`auth\` memerlukan header:`, ``);
+  lines.push(`\`\`\``, `Authorization: Bearer <access_token>`, `\`\`\``, ``);
+  lines.push(`Dapatkan token via \`POST /api/mobile/auth/login\`. Token kedaluwarsa ~1 jam.`, ``);
+
+  for (const g of groups) {
+    lines.push(`## ${g.title}`, ``);
+    for (const e of g.endpoints) {
+      lines.push(`### ${e.method} ${e.path}`);
+      lines.push(`**Auth:** ${e.auth ? "required" : "public"}  `);
+      lines.push(e.desc, ``);
+      if (e.body) {
+        lines.push(`**Request body:**`, "```json", e.body, "```", ``);
+      }
+      if (e.response) {
+        lines.push(`**Response:**`, "```json", e.response, "```", ``);
+      }
+    }
+  }
+
+  lines.push(`## Contoh cURL`, ``);
+  lines.push("```bash");
+  lines.push(`# 1) Login`);
+  lines.push(`curl -X POST ${baseUrl}/api/mobile/auth/login \\`);
+  lines.push(`  -H "Content-Type: application/json" \\`);
+  lines.push(`  -d '{"email":"user@mail.com","password":"secret123"}'`);
+  lines.push(``);
+  lines.push(`# 2) Ambil profil`);
+  lines.push(`curl ${baseUrl}/api/mobile/profile \\`);
+  lines.push(`  -H "Authorization: Bearer <ACCESS_TOKEN>"`);
+  lines.push("```");
+  return lines.join("\n");
 }
