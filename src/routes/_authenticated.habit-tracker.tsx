@@ -287,9 +287,13 @@ function HabitPage() {
             <AreaChart data={coffeeChart} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="coffeeFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
-                  <stop offset="60%" stopColor="hsl(var(--primary))" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={1e-9} />
+                  <stop offset="0%" stopColor="hsl(var(--primary-glow, var(--primary)))" stopOpacity={0.75} />
+                  <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="coffeeLine" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="hsl(var(--primary-glow, var(--primary)))" />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke="hsl(var(--border))" strokeOpacity={0.5} vertical={false} />
@@ -297,12 +301,13 @@ function HabitPage() {
               <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} allowDecimals={false} tickLine={false} axisLine={false} />
               <Tooltip
                 cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 4" }}
-                content={({ active, payload, label }) => {
+                content={({ active, payload }) => {
                   if (active && payload && payload.length) {
+                    const p = payload[0] as any;
                     return (
                       <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-xl">
-                        <p className="text-[11px] text-muted-foreground">{label}</p>
-                        <p className="mt-0.5 text-sm font-semibold text-foreground">{payload[0].value} cups</p>
+                        <p className="text-[11px] text-muted-foreground">{p?.payload?.full}</p>
+                        <p className="mt-0.5 text-sm font-semibold text-foreground">{p.value} cups kopi</p>
                       </div>
                     );
                   }
@@ -312,12 +317,13 @@ function HabitPage() {
               <Area
                 type="monotone"
                 dataKey="cups"
-                stroke="hsl(var(--primary))"
+                stroke="url(#coffeeLine)"
                 strokeWidth={2.5}
                 fill="url(#coffeeFill)"
                 dot={{ r: 4, strokeWidth: 2, stroke: "hsl(var(--card))", fill: "hsl(var(--primary))" }}
                 activeDot={{ r: 6, strokeWidth: 0, fill: "hsl(var(--primary))" }}
               />
+
             </AreaChart>
           </ResponsiveContainer>
         </div>
