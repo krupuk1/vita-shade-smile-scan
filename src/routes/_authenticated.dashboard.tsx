@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Camera, Activity, ListChecks, Sparkles, TrendingUp, Coffee, Cigarette, Brush, CheckCircle2 } from "lucide-react";
+import { Camera, Activity, ListChecks, Sparkles, TrendingUp, Coffee, Cigarette, Brush, CheckCircle2, Info } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceLine, CartesianGrid } from "recharts";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -12,6 +13,30 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 const SHADE_ORDER = ["A1", "A2", "A3", "A3.5", "A4", "B1", "B2", "B3", "B4", "C1", "C2", "C3", "C4", "D2", "D3", "D4"];
+const SHADE_COLORS: Record<string, string> = {
+  B1: "#f4ecd6", A1: "#efe3c4", B2: "#ecdcb4", D2: "#e6d4ab",
+  A2: "#e3cf9f", C1: "#dec8a0", C2: "#d2b98c", D4: "#cdb284",
+  A3: "#c9ac7b", D3: "#c1a574", B3: "#bb9e6b", "A3.5": "#b69664",
+  B4: "#ad8b58", C3: "#a4824f", A4: "#8f6e3f", C4: "#7a5a30",
+};
+const SHADE_DESC: Record<string, string> = {
+  A1: "Putih krem — paling cerah grup A",
+  A2: "Krem alami terang",
+  A3: "Krem alami sedang",
+  "A3.5": "Krem alami gelap",
+  A4: "Krem sangat gelap",
+  B1: "Paling cerah — putih murni",
+  B2: "Putih kekuningan terang",
+  B3: "Putih kekuningan sedang",
+  B4: "Putih kekuningan gelap",
+  C1: "Abu-abu kekuningan terang",
+  C2: "Abu-abu kekuningan",
+  C3: "Abu-abu kekuningan gelap",
+  C4: "Paling gelap dari semua shade",
+  D2: "Kuning pucat terang",
+  D3: "Kuning pucat sedang",
+  D4: "Kuning pucat",
+};
 function shadeIndex(s: string) {
   const i = SHADE_ORDER.indexOf(s);
   return i >= 0 ? i : 5;
