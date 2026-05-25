@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { aiChatCompletions } from "@/lib/ai-provider.server";
 
 export interface RiskCriterion { label: string; score: number; weight: number; finding: string; }
 export interface RiskItem {
@@ -30,20 +31,13 @@ export interface Recommendation {
 }
 
 async function callAI(systemPrompt: string, userPrompt: string, toolName: string, schema: any) {
-  const apiKey = process.env.LOVABLE_API_KEY;
-  if (!apiKey) throw new Error("LOVABLE_API_KEY belum terkonfigurasi");
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      tools: [{ type: "function", function: { name: toolName, description: "Laporkan hasil", parameters: schema } }],
-      tool_choice: { type: "function", function: { name: toolName } },
-    }),
+  const res = await aiChatCompletions({
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+    tools: [{ type: "function", function: { name: toolName, description: "Laporkan hasil", parameters: schema } }],
+    tool_choice: { type: "function", function: { name: toolName } },
   });
   if (!res.ok) {
     if (res.status === 429) throw new Error("Rate limit. Coba lagi sebentar.");

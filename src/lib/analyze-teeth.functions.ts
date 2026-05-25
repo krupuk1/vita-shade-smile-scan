@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { aiChatCompletions } from "@/lib/ai-provider.server";
 
 const VITA_SHADES = [
   "B1", "A1", "B2", "D2", "A2", "C1", "C2", "D4",
