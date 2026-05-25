@@ -48,13 +48,18 @@ export const updateAiSettings = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
 
-    const patch: Record<string, unknown> = {
+    const patch: {
+      provider: AiProvider;
+      model: string;
+      base_url: string | null;
+      updated_by: string;
+      api_key?: string;
+    } = {
       provider: data.provider,
       model: data.model,
       base_url: data.base_url || null,
       updated_by: userId,
     };
-    // Only overwrite api_key when user provided a new one (non-empty)
     if (typeof data.api_key === "string" && data.api_key.trim().length > 0) {
       patch.api_key = data.api_key.trim();
     }
