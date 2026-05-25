@@ -4,6 +4,7 @@ import { Settings, ShieldCheck, ShieldOff, Loader2, Info } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { AiModeSettings } from "@/components/admin/ai-mode-settings";
 
 export const Route = createFileRoute("/admin/settings")({
   component: AdminSettings,
@@ -63,6 +64,10 @@ function AdminSettings() {
           <Row k="Akun Admin Aktif" v={String(data?.filter((p) => p.isAdmin).length ?? "-")} />
         </dl>
       </section>
+
+      <div className="mb-6">
+        <AiModeSettings />
+      </div>
 
       <section className="rounded-2xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
         <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground"><ShieldCheck className="h-4 w-4 text-primary" /> Manajemen Role Admin</h2>
