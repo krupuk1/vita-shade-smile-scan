@@ -75,31 +75,45 @@ function HabitPage() {
   }, [logs]);
 
   const coffeeChart = useMemo(() => {
-    const arr = (logs ?? []).slice(0, 7).reverse();
-    return arr.map((l: any) => ({ date: new Date(l.log_date).toLocaleDateString("id-ID", { weekday: "short" }), cups: l.coffee_cups ?? 0 }));
+    const map = new Map<string, any>();
+    (logs ?? []).forEach((l: any) => map.set(l.log_date, l));
+    const days: { date: string; cups: number; full: string }[] = [];
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().split("T")[0];
+      const l = map.get(key);
+      days.push({
+        date: d.toLocaleDateString("id-ID", { weekday: "short" }),
+        cups: l?.coffee_cups ?? 0,
+        full: d.toLocaleDateString("id-ID", { day: "numeric", month: "short" }),
+      });
+    }
+    return days;
   }, [logs]);
 
-  // Heatmap (last ~30 days, aligned by weekday columns Mon..Sun)
+  // Heatmap (last ~30 days). For each cell we keep the log details for tooltip.
   const heatmap = useMemo(() => {
-    const map = new Map<string, number>();
-    (logs ?? []).forEach((l: any) => {
-      const s = (l.brushing_morning ? 1 : 0) + (l.brushing_night ? 1 : 0) + (l.flossing ? 1 : 0) + (l.mouthwash ? 1 : 0);
-      map.set(l.log_date, s);
-    });
-    // Build grid: start from Monday of (today - 4 weeks), 5 weeks * 7 days = 35 cells
+    const map = new Map<string, any>();
+    (logs ?? []).forEach((l: any) => map.set(l.log_date, l));
     const today = new Date();
     const dow = (today.getDay() + 6) % 7; // 0 = Mon
     const start = new Date(today);
     start.setDate(today.getDate() - dow - 28); // 4 weeks back to Monday
-    const weeks: { date: string; score: number; isFuture: boolean }[][] = [];
+    const weeks: { date: string; score: number; isFuture: boolean; log: any | null; dayNum: number }[][] = [];
     for (let w = 0; w < 5; w++) {
-      const row: { date: string; score: number; isFuture: boolean }[] = [];
+      const row: { date: string; score: number; isFuture: boolean; log: any | null; dayNum: number }[] = [];
       for (let d = 0; d < 7; d++) {
         const day = new Date(start);
         day.setDate(start.getDate() + w * 7 + d);
         const key = day.toISOString().split("T")[0];
         const isFuture = day > today;
-        row.push({ date: key, score: map.get(key) ?? 0, isFuture });
+        const log = map.get(key) ?? null;
+        const score = log
+          ? (log.brushing_morning ? 1 : 0) + (log.brushing_night ? 1 : 0) + (log.flossing ? 1 : 0) + (log.mouthwash ? 1 : 0)
+          : 0;
+        row.push({ date: key, score, isFuture, log, dayNum: day.getDate() });
       }
       weeks.push(row);
     }
