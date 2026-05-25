@@ -66,11 +66,39 @@ function Dashboard() {
   const lastScan = scans?.[scans.length - 1];
   const recentScans = useMemo(() => (scans ?? []).slice().reverse().slice(0, 5), [scans]);
 
-  const chartData = useMemo(() => (scans ?? []).map((s: any) => ({
-    date: new Date(s.created_at).toLocaleDateString("id-ID", { month: "short", year: "2-digit" }),
-    shade: shadeIndex(s.primary_shade),
-    shadeLabel: s.primary_shade,
-  })), [scans]);
+  // Aggregate scans into the last 6 months (avg shade index per month, latest scan label)
+  const chartData = useMemo(() => {
+    const months: { key: string; label: string; date: Date }[] = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({
+        key: `${d.getFullYear()}-${d.getMonth()}`,
+        label: d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" }),
+        date: d,
+      });
+    }
+    const buckets = new Map<string, { sum: number; n: number; last: string }>();
+    (scans ?? []).forEach((s: any) => {
+      const dt = new Date(s.created_at);
+      const k = `${dt.getFullYear()}-${dt.getMonth()}`;
+      const b = buckets.get(k) ?? { sum: 0, n: 0, last: s.primary_shade };
+      b.sum += shadeIndex(s.primary_shade);
+      b.n += 1;
+      b.last = s.primary_shade;
+      buckets.set(k, b);
+    });
+    return months.map((m) => {
+      const b = buckets.get(m.key);
+      return {
+        date: m.label,
+        shade: b ? b.sum / b.n : null,
+        shadeLabel: b?.last ?? null,
+        count: b?.n ?? 0,
+      };
+    });
+  }, [scans]);
+  const hasShadeData = chartData.some((d) => d.shade !== null);
 
   const behavior = useMemo(() => {
     const arr = habits ?? [];
