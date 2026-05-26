@@ -278,7 +278,7 @@ function Dashboard() {
         <div className="rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
           <h2 className="text-lg font-semibold text-foreground">Scan Terbaru</h2>
           {recentScans.length > 0 ? (
-            <div className="mt-4 overflow-hidden rounded-xl border border-border">
+            <div className="mt-4 overflow-x-auto rounded-xl border border-border">
               <table className="w-full text-sm">
                 <thead className="border-b border-border bg-secondary/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
                   <tr><th className="px-4 py-2.5">Tanggal</th><th className="px-4 py-2.5">Shade</th><th className="px-4 py-2.5">Brightness</th><th className="px-4 py-2.5">Confidence</th></tr>
