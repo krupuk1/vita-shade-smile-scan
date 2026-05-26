@@ -39,13 +39,13 @@ function AuthLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full" style={{ background: "var(--gradient-hero)" }}>
+      <div className="min-h-screen flex w-full overflow-x-hidden" style={{ background: "var(--gradient-hero)" }}>
         <AppSidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           <header className="h-12 flex items-center border-b border-border/40 bg-card/40 backdrop-blur px-2">
             <SidebarTrigger />
           </header>
-          <main className="flex-1">
+          <main className="flex-1 min-w-0 overflow-x-hidden">
             <Outlet />
           </main>
         </div>

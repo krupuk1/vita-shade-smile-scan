@@ -120,7 +120,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl p-6 md:p-10">
+    <div className="mx-auto w-full max-w-7xl p-4 sm:p-6 md:p-10">
       {/* Welcome hero */}
       <div className="rounded-3xl p-7 text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
         <h1 className="text-2xl md:text-3xl font-semibold">
@@ -278,7 +278,7 @@ function Dashboard() {
         <div className="rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
           <h2 className="text-lg font-semibold text-foreground">Scan Terbaru</h2>
           {recentScans.length > 0 ? (
-            <div className="mt-4 overflow-hidden rounded-xl border border-border">
+            <div className="mt-4 overflow-x-auto rounded-xl border border-border">
               <table className="w-full text-sm">
                 <thead className="border-b border-border bg-secondary/40 text-left text-xs uppercase tracking-wider text-muted-foreground">
                   <tr><th className="px-4 py-2.5">Tanggal</th><th className="px-4 py-2.5">Shade</th><th className="px-4 py-2.5">Brightness</th><th className="px-4 py-2.5">Confidence</th></tr>
