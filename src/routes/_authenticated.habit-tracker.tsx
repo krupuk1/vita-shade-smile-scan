@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo, useEffect } from "react";
 import { Loader2, Sparkles, Save, Sun, Moon, Droplet, Coffee, Cigarette, Trophy, Award, Crown, Star, Lock } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { generateHabitInsights } from "@/lib/ai-insights.functions";
@@ -196,40 +197,67 @@ function HabitPage() {
                 ))}
               </div>
               {/* Grid: rows = weeks, columns = weekdays, square cells */}
-              <div className="mt-1.5 space-y-1.5">
-                {heatmap.map((week, wi) => (
-                  <div key={wi} className="grid grid-cols-7 gap-1.5">
-                    {week.map((c) => {
-                      const greens = ["#dcfce7", "#86efac", "#22c55e", "#15803d"];
-                      const bg = c.isFuture
-                        ? "transparent"
-                        : c.score === 0
-                        ? "#f1f5f9"
-                        : greens[Math.min(c.score, 4) - 1];
-                      const textColor = c.score >= 3 ? "text-white" : "text-foreground/60";
-                      const dateLabel = new Date(c.date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
-                      const detail = c.isFuture
-                        ? `${dateLabel} — belum`
-                        : c.log
-                        ? `${dateLabel}\nSkor: ${c.score}/4\n${c.log.brushing_morning ? "✓" : "✗"} Sikat pagi · ${c.log.brushing_night ? "✓" : "✗"} Sikat malam\n${c.log.flossing ? "✓" : "✗"} Flossing · ${c.log.mouthwash ? "✓" : "✗"} Mouthwash\nKopi: ${c.log.coffee_cups ?? 0} · Teh: ${c.log.tea_cups ?? 0} · Rokok: ${c.log.cigarettes ?? 0}`
-                        : `${dateLabel} — tidak ada activity`;
-                      return (
-                        <div
-                          key={c.date}
-                          title={detail}
-                          className={`flex aspect-square items-center justify-center rounded-md text-[11px] font-semibold tabular-nums transition hover:scale-110 hover:ring-2 hover:ring-primary/40 ${textColor}`}
-                          style={{
-                            background: bg,
-                            border: c.isFuture ? "1px dashed var(--border)" : "1px solid rgba(0,0,0,0.05)",
-                          }}
-                        >
-                          {!c.isFuture && c.dayNum}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
+              <TooltipProvider delayDuration={100}>
+                <div className="mt-1.5 space-y-1.5">
+                  {heatmap.map((week, wi) => (
+                    <div key={wi} className="grid grid-cols-7 gap-1.5">
+                      {week.map((c) => {
+                        const greens = ["#dcfce7", "#86efac", "#22c55e", "#15803d"];
+                        const bg = c.isFuture
+                          ? "transparent"
+                          : c.score === 0
+                          ? "#f1f5f9"
+                          : greens[Math.min(c.score, 4) - 1];
+                        const textColor = c.score >= 3 ? "text-white" : "text-foreground/60";
+                        const dateLabel = new Date(c.date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+                        return (
+                          <UITooltip key={c.date}>
+                            <TooltipTrigger asChild>
+                              <div
+                                className={`flex aspect-square items-center justify-center rounded-md text-[11px] font-semibold tabular-nums transition hover:scale-110 hover:ring-2 hover:ring-primary/40 cursor-pointer ${textColor}`}
+                                style={{
+                                  background: bg,
+                                  border: c.isFuture ? "1px dashed var(--border)" : "1px solid rgba(0,0,0,0.05)",
+                                }}
+                              >
+                                {!c.isFuture && c.dayNum}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="bg-popover text-popover-foreground border border-border shadow-xl rounded-xl px-3 py-2.5 min-w-[200px]">
+                              <div className="space-y-1.5">
+                                <p className="text-[11px] font-medium text-muted-foreground">{dateLabel}</p>
+                                {c.isFuture ? (
+                                  <p className="text-xs text-muted-foreground italic">Belum tiba</p>
+                                ) : c.log ? (
+                                  <>
+                                    <div className="flex items-center gap-2">
+                                      <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: bg }} />
+                                      <p className="text-sm font-semibold text-foreground">Skor {c.score}/4</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px] pt-1 border-t border-border/60">
+                                      <span className={c.log.brushing_morning ? "text-emerald-600" : "text-muted-foreground/60"}>{c.log.brushing_morning ? "✓" : "✗"} Sikat pagi</span>
+                                      <span className={c.log.brushing_night ? "text-emerald-600" : "text-muted-foreground/60"}>{c.log.brushing_night ? "✓" : "✗"} Sikat malam</span>
+                                      <span className={c.log.flossing ? "text-emerald-600" : "text-muted-foreground/60"}>{c.log.flossing ? "✓" : "✗"} Flossing</span>
+                                      <span className={c.log.mouthwash ? "text-emerald-600" : "text-muted-foreground/60"}>{c.log.mouthwash ? "✓" : "✗"} Mouthwash</span>
+                                    </div>
+                                    <div className="flex gap-3 text-[11px] text-muted-foreground pt-1 border-t border-border/60">
+                                      <span>☕ {c.log.coffee_cups ?? 0}</span>
+                                      <span>🍵 {c.log.tea_cups ?? 0}</span>
+                                      <span>🚬 {c.log.cigarettes ?? 0}</span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <p className="text-xs text-muted-foreground italic">Tidak ada activity</p>
+                                )}
+                              </div>
+                            </TooltipContent>
+                          </UITooltip>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </TooltipProvider>
             </div>
             <div className="mt-4 flex items-center justify-between">
               <p className="text-[10px] text-muted-foreground">Skor harian: sikat pagi + sikat malam + flossing + mouthwash (max 4)</p>
