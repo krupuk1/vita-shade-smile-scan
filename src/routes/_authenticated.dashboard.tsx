@@ -120,7 +120,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl p-6 md:p-10">
+    <div className="mx-auto w-full max-w-7xl p-4 sm:p-6 md:p-10">
       {/* Welcome hero */}
       <div className="rounded-3xl p-7 text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
         <h1 className="text-2xl md:text-3xl font-semibold">
