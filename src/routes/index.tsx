@@ -1,10 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Sparkles, Camera, Activity, ListChecks, ArrowRight, ShieldCheck,
+  Sparkles, ListChecks, ArrowRight,
   PlayCircle, ScanLine, BookOpenCheck, Star,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import heroImage from "@/assets/hero-tooth.jpg";
+import featureSmartScanningImage from "@/assets/feature-smart-scanning.jpg";
+import featureBehaviorTrackingImage from "@/assets/feature-behavior-tracking.jpg";
+import featureRiskAnalysisImage from "@/assets/feature-risk-analysis.jpg";
+import featureSmartRecommendationsImage from "@/assets/feature-smart-recommendations.jpg";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -107,10 +111,14 @@ function Landing() {
           {FEATURES.map((f, i) => (
             <div key={f.title} className={`grid items-center gap-8 md:grid-cols-2 ${i % 2 ? "md:[&>div:first-child]:order-2" : ""}`}>
               <div className="relative overflow-hidden rounded-3xl bg-card" style={{ boxShadow: "var(--shadow-card)" }}>
-                <div className={`flex h-64 items-center justify-center text-7xl ${f.bgClass}`}>{f.emoji}</div>
-                <span className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-xl text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
-                  <f.icon className="h-4 w-4" />
-                </span>
+                <img
+                  src={f.image}
+                  alt={f.imageAlt}
+                  loading="lazy"
+                  width={1024}
+                  height={768}
+                  className="h-64 w-full object-cover"
+                />
               </div>
               <div>
                 <p className="text-5xl font-light text-primary/30">{String(i + 1).padStart(2, "0")}</p>
@@ -240,8 +248,8 @@ function Landing() {
 }
 
 const FEATURES = [
-  { icon: Camera, title: "Smart Scanning", desc: "Teknologi analisis gigi VITA Shade berbasis AI untuk akurasi dan personal.", emoji: "🦷", bgClass: "bg-gradient-to-br from-violet-100 to-fuchsia-100", tags: ["AI Powered", "VITA Shade Guide", "Instant Result"] },
-  { icon: ListChecks, title: "Behavior Tracking", desc: "Pantau kebiasaan kopi, teh, sikat, dan flossing untuk mencegah perubahan warna gigi.", emoji: "📊", bgClass: "bg-gradient-to-br from-emerald-100 to-teal-100", tags: ["Daily Logging", "Insights", "Achievements"] },
-  { icon: Activity, title: "Risk Analysis", desc: "Deteksi dini risiko karies, plak, dan stain dengan AI yang transparan.", emoji: "📈", bgClass: "bg-gradient-to-br from-rose-100 to-amber-100", tags: ["AI Score", "Transparency", "Alerts"] },
-  { icon: ShieldCheck, title: "Smart Recommendations", desc: "Rekomendasi personal sesuai pola Anda — actionable & dapat dijalankan.", emoji: "💡", bgClass: "bg-gradient-to-br from-sky-100 to-indigo-100", tags: ["Personalized", "Evidence-based", "Actionable"] },
+  { image: featureSmartScanningImage, imageAlt: "Antarmuka smart scanning gigi Tintify", title: "Smart Scanning", desc: "Teknologi analisis gigi VITA Shade berbasis AI untuk akurasi dan personal.", tags: ["AI Powered", "VITA Shade Guide", "Instant Result"] },
+  { image: featureBehaviorTrackingImage, imageAlt: "Pengguna melacak kebiasaan menyikat gigi di aplikasi", title: "Behavior Tracking", desc: "Pantau kebiasaan kopi, teh, sikat, dan flossing untuk mencegah perubahan warna gigi.", tags: ["Daily Logging", "Insights", "Achievements"] },
+  { image: featureRiskAnalysisImage, imageAlt: "Dokter gigi menganalisis risiko perubahan warna gigi", title: "Risk Analysis", desc: "Deteksi dini risiko karies, plak, dan stain dengan AI yang transparan.", tags: ["AI Score", "Transparency", "Alerts"] },
+  { image: featureSmartRecommendationsImage, imageAlt: "Konsultasi rekomendasi perawatan gigi yang dipersonalisasi", title: "Smart Recommendations", desc: "Rekomendasi personal sesuai pola Anda — actionable & dapat dijalankan.", tags: ["Personalized", "Evidence-based", "Actionable"] },
 ];
