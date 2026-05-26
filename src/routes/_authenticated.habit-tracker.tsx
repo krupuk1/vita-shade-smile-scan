@@ -188,24 +188,23 @@ function HabitPage() {
               <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">📅 Activity Heatmap</h2>
               <span className="text-xs text-muted-foreground">30 hari terakhir</span>
             </div>
-            <div className="mt-4 flex gap-2">
-              {/* Weekday labels column */}
-              <div className="flex flex-col gap-1.5 pt-0.5 text-[10px] font-medium text-muted-foreground">
+            <div className="mt-4">
+              {/* Weekday labels row (top) */}
+              <div className="grid grid-cols-7 gap-1.5 text-[10px] font-medium text-muted-foreground">
                 {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((d) => (
-                  <div key={d} className="flex h-8 w-7 items-center justify-end pr-1">{d}</div>
+                  <div key={d} className="flex aspect-square items-center justify-center">{d}</div>
                 ))}
               </div>
-              {/* Grid: columns are weeks */}
-              <div className="flex flex-1 gap-1.5">
+              {/* Grid: rows = weeks, columns = weekdays, square cells */}
+              <div className="mt-1.5 space-y-1.5">
                 {heatmap.map((week, wi) => (
-                  <div key={wi} className="flex flex-1 flex-col gap-1.5">
+                  <div key={wi} className="grid grid-cols-7 gap-1.5">
                     {week.map((c) => {
-                      // Empty/no log = light gray; activity 1-4 = green levels
-                      const greens = ["#dcfce7", "#86efac", "#22c55e", "#15803d"]; // tailwind green-100, 300, 500, 700
+                      const greens = ["#dcfce7", "#86efac", "#22c55e", "#15803d"];
                       const bg = c.isFuture
                         ? "transparent"
                         : c.score === 0
-                        ? "#f1f5f9" // slate-100 (abu muda)
+                        ? "#f1f5f9"
                         : greens[Math.min(c.score, 4) - 1];
                       const textColor = c.score >= 3 ? "text-white" : "text-foreground/60";
                       const dateLabel = new Date(c.date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
@@ -218,7 +217,7 @@ function HabitPage() {
                         <div
                           key={c.date}
                           title={detail}
-                          className={`flex h-8 items-center justify-center rounded-md text-[10px] font-semibold tabular-nums transition hover:scale-110 hover:ring-2 hover:ring-primary/40 ${textColor}`}
+                          className={`flex aspect-square items-center justify-center rounded-md text-[11px] font-semibold tabular-nums transition hover:scale-110 hover:ring-2 hover:ring-primary/40 ${textColor}`}
                           style={{
                             background: bg,
                             border: c.isFuture ? "1px dashed var(--border)" : "1px solid rgba(0,0,0,0.05)",
