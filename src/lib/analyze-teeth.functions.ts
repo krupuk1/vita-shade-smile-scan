@@ -94,8 +94,15 @@ async function uploadScanImage(userId: string, dataUrl: string): Promise<string 
       console.error("[saveScan] upload failed", error);
       return null;
     }
-    const { data: pub } = supabaseAdmin.storage.from(SCAN_BUCKET).getPublicUrl(path);
-    return pub.publicUrl;
+    // Bucket is private; create a long-lived signed URL (1 year).
+    const { data: signed, error: signErr } = await supabaseAdmin.storage
+      .from(SCAN_BUCKET)
+      .createSignedUrl(path, 60 * 60 * 24 * 365);
+    if (signErr) {
+      console.error("[saveScan] sign url failed", signErr);
+      return null;
+    }
+    return signed.signedUrl;
   } catch (e) {
     console.error("[saveScan] upload exception", e);
     return null;
