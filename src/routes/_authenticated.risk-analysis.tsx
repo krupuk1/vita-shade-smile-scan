@@ -36,11 +36,27 @@ const SHADE_DESC: Record<string, string> = {
 
 function RiskPage() {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const fn = useServerFn(generateRiskAnalysis);
+  const loadLatest = useServerFn(getLatestRiskAnalysis);
+
+  const latest = useQuery({
+    queryKey: ["risk-latest", user?.id],
+    enabled: !!user,
+    queryFn: () => loadLatest({}),
+  });
+
   const m = useMutation({
     mutationFn: () => fn({}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["risk-latest", user?.id] });
+      toast.success("Analisis tersimpan");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const current: RiskAnalysis | undefined = m.data ?? latest.data?.analysis;
+
 
   const { data: latestScan } = useQuery({
     queryKey: ["latest-scan", user?.id],
