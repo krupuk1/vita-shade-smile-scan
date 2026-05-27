@@ -200,6 +200,33 @@ export type Database = {
         }
         Relationships: []
       }
+      risk_analyses: {
+        Row: {
+          analysis: Json
+          created_at: string
+          id: string
+          overall_score: number | null
+          summary: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis: Json
+          created_at?: string
+          id?: string
+          overall_score?: number | null
+          summary?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis?: Json
+          created_at?: string
+          id?: string
+          overall_score?: number | null
+          summary?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       tooth_scans: {
         Row: {
           brightness: string | null

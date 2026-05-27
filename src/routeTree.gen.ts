@@ -35,6 +35,7 @@ import { Route as ApiMobileRecommendationsRouteImport } from './routes/api/mobil
 import { Route as ApiMobileProfileRouteImport } from './routes/api/mobile/profile'
 import { Route as ApiMobileHabitsRouteImport } from './routes/api/mobile/habits'
 import { Route as ApiMobileHabitInsightsRouteImport } from './routes/api/mobile/habit-insights'
+import { Route as ApiMobileAvatarRouteImport } from './routes/api/mobile/avatar'
 import { Route as ApiMobileArticlesRouteImport } from './routes/api/mobile/articles'
 import { Route as ApiMobileAnalyzeRouteImport } from './routes/api/mobile/analyze'
 import { Route as ApiMobileRecommendationsGenerateRouteImport } from './routes/api/mobile/recommendations.generate'
@@ -174,6 +175,11 @@ const ApiMobileHabitInsightsRoute = ApiMobileHabitInsightsRouteImport.update({
   path: '/api/mobile/habit-insights',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMobileAvatarRoute = ApiMobileAvatarRouteImport.update({
+  id: '/api/mobile/avatar',
+  path: '/api/mobile/avatar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMobileArticlesRoute = ApiMobileArticlesRouteImport.update({
   id: '/api/mobile/articles',
   path: '/api/mobile/articles',
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/api/mobile/analyze': typeof ApiMobileAnalyzeRoute
   '/api/mobile/articles': typeof ApiMobileArticlesRoute
+  '/api/mobile/avatar': typeof ApiMobileAvatarRoute
   '/api/mobile/habit-insights': typeof ApiMobileHabitInsightsRoute
   '/api/mobile/habits': typeof ApiMobileHabitsRoute
   '/api/mobile/profile': typeof ApiMobileProfileRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/api/mobile/analyze': typeof ApiMobileAnalyzeRoute
   '/api/mobile/articles': typeof ApiMobileArticlesRoute
+  '/api/mobile/avatar': typeof ApiMobileAvatarRoute
   '/api/mobile/habit-insights': typeof ApiMobileHabitInsightsRoute
   '/api/mobile/habits': typeof ApiMobileHabitsRoute
   '/api/mobile/profile': typeof ApiMobileProfileRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/api/mobile/analyze': typeof ApiMobileAnalyzeRoute
   '/api/mobile/articles': typeof ApiMobileArticlesRoute
+  '/api/mobile/avatar': typeof ApiMobileAvatarRoute
   '/api/mobile/habit-insights': typeof ApiMobileHabitInsightsRoute
   '/api/mobile/habits': typeof ApiMobileHabitsRoute
   '/api/mobile/profile': typeof ApiMobileProfileRoute
@@ -322,6 +331,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/api/mobile/analyze'
     | '/api/mobile/articles'
+    | '/api/mobile/avatar'
     | '/api/mobile/habit-insights'
     | '/api/mobile/habits'
     | '/api/mobile/profile'
@@ -353,6 +363,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/api/mobile/analyze'
     | '/api/mobile/articles'
+    | '/api/mobile/avatar'
     | '/api/mobile/habit-insights'
     | '/api/mobile/habits'
     | '/api/mobile/profile'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/api/mobile/analyze'
     | '/api/mobile/articles'
+    | '/api/mobile/avatar'
     | '/api/mobile/habit-insights'
     | '/api/mobile/habits'
     | '/api/mobile/profile'
@@ -405,6 +417,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   ApiMobileAnalyzeRoute: typeof ApiMobileAnalyzeRoute
   ApiMobileArticlesRoute: typeof ApiMobileArticlesRoute
+  ApiMobileAvatarRoute: typeof ApiMobileAvatarRoute
   ApiMobileHabitInsightsRoute: typeof ApiMobileHabitInsightsRoute
   ApiMobileHabitsRoute: typeof ApiMobileHabitsRoute
   ApiMobileProfileRoute: typeof ApiMobileProfileRoute
@@ -599,6 +612,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMobileHabitInsightsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/mobile/avatar': {
+      id: '/api/mobile/avatar'
+      path: '/api/mobile/avatar'
+      fullPath: '/api/mobile/avatar'
+      preLoaderRoute: typeof ApiMobileAvatarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/mobile/articles': {
       id: '/api/mobile/articles'
       path: '/api/mobile/articles'
@@ -708,6 +728,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   ApiMobileAnalyzeRoute: ApiMobileAnalyzeRoute,
   ApiMobileArticlesRoute: ApiMobileArticlesRoute,
+  ApiMobileAvatarRoute: ApiMobileAvatarRoute,
   ApiMobileHabitInsightsRoute: ApiMobileHabitInsightsRoute,
   ApiMobileHabitsRoute: ApiMobileHabitsRoute,
   ApiMobileProfileRoute: ApiMobileProfileRoute,

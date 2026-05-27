@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
-  User as UserIcon, Crown, History, Download, HelpCircle, Info, Shield, LogOut, Trash2, Save, Loader2,
+  User as UserIcon, Crown, History, Download, HelpCircle, Info, Shield, LogOut, Trash2, Save, Loader2, Camera,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -13,6 +13,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [{ title: "Profile — Tintify" }] }),
 });
 
+
 function ProfilePage() {
   const { user, signOut } = useAuth();
   const qc = useQueryClient();
@@ -20,6 +21,8 @@ function ProfilePage() {
   const [displayName, setDisplayName] = useState("");
   const [pushNotif, setPushNotif] = useState(true);
   const [emailReports, setEmailReports] = useState(true);
+  const fileRef = useRef<HTMLInputElement>(null);
+
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
@@ -66,6 +69,25 @@ function ProfilePage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const uploadAvatar = useMutation({
+    mutationFn: async (file: File) => {
+      if (!user) throw new Error("Not signed in");
+      if (file.size > 5 * 1024 * 1024) throw new Error("Maks 5MB");
+      const ext = (file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const avatar_url = pub.publicUrl;
+      const { error } = await supabase.from("profiles").update({ avatar_url }).eq("user_id", user.id);
+      if (error) throw error;
+      return avatar_url;
+    },
+    onSuccess: () => { toast.success("Foto profil diperbarui"); qc.invalidateQueries({ queryKey: ["profile"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
   async function handleLogout() {
     await signOut();
     toast.success("Anda telah keluar");
@@ -83,9 +105,36 @@ function ProfilePage() {
         <div className="space-y-6">
           {/* Hero */}
           <div className="rounded-3xl p-8 text-center text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-white/20 text-2xl font-bold backdrop-blur">
-              {initials}
+            <div className="relative mx-auto h-24 w-24">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Avatar" className="h-24 w-24 rounded-full object-cover ring-2 ring-white/40" />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/20 text-2xl font-bold backdrop-blur">
+                  {initials}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploadAvatar.isPending}
+                className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary shadow-md transition hover:scale-105 disabled:opacity-60"
+                aria-label="Ganti foto profil"
+              >
+                {uploadAvatar.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadAvatar.mutate(f);
+                  e.target.value = "";
+                }}
+              />
             </div>
+
             <h2 className="mt-4 text-2xl font-semibold">{displayName || user?.email?.split("@")[0]}</h2>
             <p className="text-sm opacity-90">{user?.email}</p>
             <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-4 py-1 text-xs font-medium backdrop-blur">

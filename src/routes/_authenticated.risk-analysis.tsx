@@ -1,14 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Activity, Loader2, ShieldCheck, ChevronDown, Lightbulb, Brain, TrendingUp, ArrowRight, Info } from "lucide-react";
-import { generateRiskAnalysis, type RiskAnalysis, type RiskItem } from "@/lib/ai-insights.functions";
+import { Activity, Loader2, ShieldCheck, ChevronDown, Lightbulb, Brain, TrendingUp, ArrowRight, Info, History } from "lucide-react";
+import { generateRiskAnalysis, getLatestRiskAnalysis, type RiskAnalysis, type RiskItem } from "@/lib/ai-insights.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/risk-analysis")({
   component: RiskPage,
@@ -35,11 +36,27 @@ const SHADE_DESC: Record<string, string> = {
 
 function RiskPage() {
   const { user } = useAuth();
+  const qc = useQueryClient();
   const fn = useServerFn(generateRiskAnalysis);
+  const loadLatest = useServerFn(getLatestRiskAnalysis);
+
+  const latest = useQuery({
+    queryKey: ["risk-latest", user?.id],
+    enabled: !!user,
+    queryFn: () => loadLatest({}),
+  });
+
   const m = useMutation({
     mutationFn: () => fn({}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["risk-latest", user?.id] });
+      toast.success("Analisis tersimpan");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const current: RiskAnalysis | undefined = m.data ?? latest.data?.analysis;
+
 
   const { data: latestScan } = useQuery({
     queryKey: ["latest-scan", user?.id],
@@ -114,20 +131,33 @@ function RiskPage() {
         )}
       </div>
 
-      {!m.data && (
+      {!current && (
         <div className="rounded-3xl bg-card p-8 text-center" style={{ boxShadow: "var(--shadow-card)" }}>
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
             <Activity className="h-6 w-6" />
           </div>
           <h2 className="text-xl font-semibold text-foreground">Generate Risk Analysis</h2>
-          <p className="mt-2 text-sm text-muted-foreground">AI akan menganalisis history scan dan habit Anda untuk menilai risiko, kriteria penilaian, dan rekomendasi.</p>
-          <button onClick={() => m.mutate()} disabled={m.isPending} className="mt-5 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60" style={{ background: "var(--gradient-primary)" }}>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {latest.isLoading ? "Memuat analisis terakhir…" : "AI akan menganalisis history scan dan habit Anda untuk menilai risiko, kriteria penilaian, dan rekomendasi."}
+          </p>
+          <button onClick={() => m.mutate()} disabled={m.isPending || latest.isLoading} className="mt-5 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60" style={{ background: "var(--gradient-primary)" }}>
             {m.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Menganalisis…</> : "Mulai Analisis"}
           </button>
         </div>
       )}
 
-      {m.data && <RiskResult data={m.data} onRetry={() => m.reset()} />}
+      {current && (
+        <>
+          {latest.data && !m.data && (
+            <div className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-secondary/40 px-4 py-2.5 text-xs text-muted-foreground">
+              <History className="h-3.5 w-3.5" />
+              Analisis tersimpan · {new Date(latest.data.created_at).toLocaleString("id-ID")}
+            </div>
+          )}
+          <RiskResult data={current} onRetry={() => m.mutate()} isPending={m.isPending} />
+        </>
+      )}
+
     </div>
   );
 }
@@ -144,7 +174,7 @@ function shadeAdvice(s: string) {
   return "Sebaiknya kurangi kopi/teh/rokok dan pertimbangkan konsultasi profesional.";
 }
 
-function RiskResult({ data, onRetry }: { data: RiskAnalysis; onRetry: () => void }) {
+function RiskResult({ data, onRetry, isPending }: { data: RiskAnalysis; onRetry: () => void; isPending?: boolean }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
@@ -183,7 +213,7 @@ function RiskResult({ data, onRetry }: { data: RiskAnalysis; onRetry: () => void
         </Link>
       </div>
 
-      <button onClick={onRetry} className="rounded-xl border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-secondary">Analisis ulang</button>
+      <button onClick={onRetry} disabled={isPending} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-60">{isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Analisis ulang</button>
     </div>
   );
 }

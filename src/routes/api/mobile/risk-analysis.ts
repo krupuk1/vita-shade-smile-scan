@@ -44,6 +44,31 @@ export const Route = createFileRoute("/api/mobile/risk-analysis")({
   server: {
     handlers: {
       OPTIONS: async () => preflight(),
+      GET: async ({ request }) => {
+        const auth = await authenticate(request);
+        if (auth instanceof Response) return auth;
+        const url = new URL(request.url);
+        const history = url.searchParams.get("history") === "1";
+        if (history) {
+          const { data, error } = await auth.supabase
+            .from("risk_analyses")
+            .select("id, created_at, overall_score, summary")
+            .eq("user_id", auth.userId)
+            .order("created_at", { ascending: false })
+            .limit(20);
+          if (error) return json({ error: error.message }, 500);
+          return json({ history: data ?? [] });
+        }
+        const { data, error } = await auth.supabase
+          .from("risk_analyses")
+          .select("id, analysis, created_at, overall_score")
+          .eq("user_id", auth.userId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (error) return json({ error: error.message }, 500);
+        return json({ latest: data ?? null });
+      },
       POST: async ({ request }) => {
         const auth = await authenticate(request);
         if (auth instanceof Response) return auth;
@@ -73,7 +98,16 @@ Habit 14 hari: ${(habits ?? []).map((h: any) => `${h.log_date}: brush=${(h.brush
         const j = await res.json();
         const args = j.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
         if (!args) return json({ error: "Invalid AI response" }, 502);
-        return json({ analysis: JSON.parse(args) });
+        const analysis = JSON.parse(args);
+
+        await auth.supabase.from("risk_analyses").insert({
+          user_id: auth.userId,
+          analysis,
+          overall_score: analysis.overall_score,
+          summary: analysis.summary,
+        });
+
+        return json({ analysis });
       },
     },
   },
