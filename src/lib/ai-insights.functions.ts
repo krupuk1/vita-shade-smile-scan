@@ -53,7 +53,7 @@ async function callAI(systemPrompt: string, userPrompt: string, toolName: string
 export const generateRiskAnalysis = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
     const [{ data: scans }, { data: habits }] = await Promise.all([
       supabase.from("tooth_scans").select("*").order("created_at", { ascending: false }).limit(10),
       supabase.from("habit_logs").select("*").order("log_date", { ascending: false }).limit(14),
@@ -62,7 +62,7 @@ export const generateRiskAnalysis = createServerFn({ method: "POST" })
     const summary = `Scan terakhir: ${(scans ?? []).map((s: any) => `${s.primary_shade}(${s.hygiene_score ?? "?"})`).join(", ") || "belum ada"}.
 Habit 14 hari: ${(habits ?? []).map((h: any) => `${h.log_date}: brush=${(h.brushing_morning ? 1 : 0) + (h.brushing_night ? 1 : 0)}/2, floss=${h.flossing}, kopi=${h.coffee_cups}, rokok=${h.cigarettes}`).join("; ") || "belum ada"}.`;
 
-    return (await callAI(
+    const result = (await callAI(
       "Anda adalah asisten kesehatan gigi profesional. Analisis risiko berbasis data scan & habit user secara transparan. Jawab dalam Bahasa Indonesia.",
       `Berdasarkan data berikut, identifikasi 3-5 risiko utama (karies, plak/tartar, stain, gum disease, enamel erosion). Untuk SETIAP risiko, sertakan:
 - score 0-100 dan level (low/medium/high)
@@ -102,7 +102,50 @@ Juga sertakan: summary 2-3 kalimat, methodology (penjelasan bagaimana AI menilai
         required: ["risks", "summary", "methodology", "overall_score"]
       }
     )) as RiskAnalysis;
+
+    await supabase.from("risk_analyses").insert({
+      user_id: userId,
+      analysis: result as any,
+      overall_score: result.overall_score,
+      summary: result.summary,
+    });
+
+    return result;
   });
+
+export const getLatestRiskAnalysis = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data } = await supabase
+      .from("risk_analyses")
+      .select("id, analysis, created_at, overall_score")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!data) return null;
+    return {
+      id: data.id,
+      created_at: data.created_at,
+      analysis: data.analysis as unknown as RiskAnalysis,
+    };
+  });
+
+export const getRiskHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data } = await supabase
+      .from("risk_analyses")
+      .select("id, created_at, overall_score, summary")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(20);
+    return data ?? [];
+  });
+
+
 
 export const getRecommendations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
