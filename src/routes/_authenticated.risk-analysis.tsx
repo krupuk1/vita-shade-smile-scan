@@ -174,7 +174,7 @@ function shadeAdvice(s: string) {
   return "Sebaiknya kurangi kopi/teh/rokok dan pertimbangkan konsultasi profesional.";
 }
 
-function RiskResult({ data, onRetry }: { data: RiskAnalysis; onRetry: () => void }) {
+function RiskResult({ data, onRetry, isPending }: { data: RiskAnalysis; onRetry: () => void; isPending?: boolean }) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
