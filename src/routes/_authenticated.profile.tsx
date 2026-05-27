@@ -69,6 +69,25 @@ function ProfilePage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const uploadAvatar = useMutation({
+    mutationFn: async (file: File) => {
+      if (!user) throw new Error("Not signed in");
+      if (file.size > 5 * 1024 * 1024) throw new Error("Maks 5MB");
+      const ext = (file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const avatar_url = pub.publicUrl;
+      const { error } = await supabase.from("profiles").update({ avatar_url }).eq("user_id", user.id);
+      if (error) throw error;
+      return avatar_url;
+    },
+    onSuccess: () => { toast.success("Foto profil diperbarui"); qc.invalidateQueries({ queryKey: ["profile"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+
   async function handleLogout() {
     await signOut();
     toast.success("Anda telah keluar");
