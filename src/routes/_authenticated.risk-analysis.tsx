@@ -213,7 +213,7 @@ function RiskResult({ data, onRetry, isPending }: { data: RiskAnalysis; onRetry:
         </Link>
       </div>
 
-      <button onClick={onRetry} className="rounded-xl border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-secondary">Analisis ulang</button>
+      <button onClick={onRetry} disabled={isPending} className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-secondary disabled:opacity-60">{isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />} Analisis ulang</button>
     </div>
   );
 }
