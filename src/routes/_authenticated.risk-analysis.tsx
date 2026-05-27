@@ -1,14 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Activity, Loader2, ShieldCheck, ChevronDown, Lightbulb, Brain, TrendingUp, ArrowRight, Info } from "lucide-react";
-import { generateRiskAnalysis, type RiskAnalysis, type RiskItem } from "@/lib/ai-insights.functions";
+import { Activity, Loader2, ShieldCheck, ChevronDown, Lightbulb, Brain, TrendingUp, ArrowRight, Info, History } from "lucide-react";
+import { generateRiskAnalysis, getLatestRiskAnalysis, type RiskAnalysis, type RiskItem } from "@/lib/ai-insights.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/risk-analysis")({
   component: RiskPage,
