@@ -105,9 +105,36 @@ function ProfilePage() {
         <div className="space-y-6">
           {/* Hero */}
           <div className="rounded-3xl p-8 text-center text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-white/20 text-2xl font-bold backdrop-blur">
-              {initials}
+            <div className="relative mx-auto h-24 w-24">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Avatar" className="h-24 w-24 rounded-full object-cover ring-2 ring-white/40" />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white/20 text-2xl font-bold backdrop-blur">
+                  {initials}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploadAvatar.isPending}
+                className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary shadow-md transition hover:scale-105 disabled:opacity-60"
+                aria-label="Ganti foto profil"
+              >
+                {uploadAvatar.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadAvatar.mutate(f);
+                  e.target.value = "";
+                }}
+              />
             </div>
+
             <h2 className="mt-4 text-2xl font-semibold">{displayName || user?.email?.split("@")[0]}</h2>
             <p className="text-sm opacity-90">{user?.email}</p>
             <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-4 py-1 text-xs font-medium backdrop-blur">
