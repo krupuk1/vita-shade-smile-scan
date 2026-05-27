@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
-  User as UserIcon, Crown, History, Download, HelpCircle, Info, Shield, LogOut, Trash2, Save, Loader2,
+  User as UserIcon, Crown, History, Download, HelpCircle, Info, Shield, LogOut, Trash2, Save, Loader2, Camera,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
   head: () => ({ meta: [{ title: "Profile — Tintify" }] }),
 });
+
 
 function ProfilePage() {
   const { user, signOut } = useAuth();
