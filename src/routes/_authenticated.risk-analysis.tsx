@@ -131,20 +131,33 @@ function RiskPage() {
         )}
       </div>
 
-      {!m.data && (
+      {!current && (
         <div className="rounded-3xl bg-card p-8 text-center" style={{ boxShadow: "var(--shadow-card)" }}>
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
             <Activity className="h-6 w-6" />
           </div>
           <h2 className="text-xl font-semibold text-foreground">Generate Risk Analysis</h2>
-          <p className="mt-2 text-sm text-muted-foreground">AI akan menganalisis history scan dan habit Anda untuk menilai risiko, kriteria penilaian, dan rekomendasi.</p>
-          <button onClick={() => m.mutate()} disabled={m.isPending} className="mt-5 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60" style={{ background: "var(--gradient-primary)" }}>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {latest.isLoading ? "Memuat analisis terakhir…" : "AI akan menganalisis history scan dan habit Anda untuk menilai risiko, kriteria penilaian, dan rekomendasi."}
+          </p>
+          <button onClick={() => m.mutate()} disabled={m.isPending || latest.isLoading} className="mt-5 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60" style={{ background: "var(--gradient-primary)" }}>
             {m.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Menganalisis…</> : "Mulai Analisis"}
           </button>
         </div>
       )}
 
-      {m.data && <RiskResult data={m.data} onRetry={() => m.reset()} />}
+      {current && (
+        <>
+          {latest.data && !m.data && (
+            <div className="mb-4 flex items-center gap-2 rounded-xl border border-border bg-secondary/40 px-4 py-2.5 text-xs text-muted-foreground">
+              <History className="h-3.5 w-3.5" />
+              Analisis tersimpan · {new Date(latest.data.created_at).toLocaleString("id-ID")}
+            </div>
+          )}
+          <RiskResult data={current} onRetry={() => m.mutate()} isPending={m.isPending} />
+        </>
+      )}
+
     </div>
   );
 }
