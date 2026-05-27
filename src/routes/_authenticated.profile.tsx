@@ -21,6 +21,8 @@ function ProfilePage() {
   const [displayName, setDisplayName] = useState("");
   const [pushNotif, setPushNotif] = useState(true);
   const [emailReports, setEmailReports] = useState(true);
+  const fileRef = useRef<HTMLInputElement>(null);
+
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
