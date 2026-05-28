@@ -1,4 +1,5 @@
 export type Lang = "id" | "en";
+type Loose<T> = T extends string ? string : T extends readonly (infer U)[] ? Loose<U>[] : T extends object ? { [K in keyof T]: Loose<T[K]> } : T;
 
 export const translations = {
   id: {
