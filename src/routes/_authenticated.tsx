@@ -43,8 +43,9 @@ function AuthLayout() {
       <div className="min-h-screen flex w-full overflow-x-hidden" style={{ background: "var(--gradient-hero)" }}>
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-12 flex items-center border-b border-border/40 bg-card/40 backdrop-blur px-2">
+          <header className="h-12 flex items-center justify-between border-b border-border/40 bg-card/40 backdrop-blur px-2">
             <SidebarTrigger />
+            <LanguageSwitcher />
           </header>
           <main className="flex-1 min-w-0 overflow-x-hidden">
             <Outlet />
