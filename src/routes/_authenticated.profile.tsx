@@ -68,7 +68,7 @@ function ProfilePage() {
       }, { onConflict: "user_id" });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Profil disimpan"); qc.invalidateQueries({ queryKey: ["profile"] }); },
+    onSuccess: () => { toast.success(t.profile.profileSaved); qc.invalidateQueries({ queryKey: ["profile"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -86,14 +86,14 @@ function ProfilePage() {
       if (error) throw error;
       return avatar_url;
     },
-    onSuccess: () => { toast.success("Foto profil diperbarui"); qc.invalidateQueries({ queryKey: ["profile"] }); },
+    onSuccess: () => { toast.success(t.profile.avatarUpdated); qc.invalidateQueries({ queryKey: ["profile"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
 
   async function handleLogout() {
     await signOut();
-    toast.success("Anda telah keluar");
+    toast.success(t.auth.signedOut);
     navigate({ to: "/" });
   }
 
