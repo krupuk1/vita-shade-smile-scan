@@ -374,4 +374,4 @@ export const translations = {
   },
 } as const;
 
-export type Dict = typeof translations.id;
+export type Dict = Loose<typeof translations.id>;
