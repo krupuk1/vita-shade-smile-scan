@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useT, useLang } from "@/i18n/LanguageProvider";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/profile")({
