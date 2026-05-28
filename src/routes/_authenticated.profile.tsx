@@ -17,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/profile")({
 
 function ProfilePage() {
   const { user, signOut } = useAuth();
+  const t = useT();
+  const { lang } = useLang();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState("");
