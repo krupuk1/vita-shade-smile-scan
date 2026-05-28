@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { useT } from "@/i18n/LanguageProvider";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
@@ -13,6 +15,7 @@ export const Route = createFileRoute("/signup")({
 
 function SignupPage() {
   const navigate = useNavigate();
+  const t = useT();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [gender, setGender] = useState("");
@@ -31,12 +34,12 @@ function SignupPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!allValid) {
-      toast.error("Password belum memenuhi syarat.");
+      toast.error(t.auth.pwInvalid);
       return;
     }
-    if (!gender) return toast.error("Pilih jenis kelamin.");
+    if (!gender) return toast.error(t.auth.pickGender);
     const ageNum = Number(age);
-    if (!ageNum || ageNum < 5 || ageNum > 120) return toast.error("Masukkan usia yang valid (5–120).");
+    if (!ageNum || ageNum < 5 || ageNum > 120) return toast.error(t.auth.ageInvalid);
 
     setLoading(true);
     const { error } = await supabase.auth.signUp({
@@ -49,18 +52,19 @@ function SignupPage() {
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Akun dibuat! Anda akan diarahkan…");
+    toast.success(t.auth.accountCreated);
     navigate({ to: "/dashboard" });
   }
 
   async function handleGoogle() {
     const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/dashboard" });
-    if (result.error) toast.error("Daftar dengan Google gagal");
+    if (result.error) toast.error(t.auth.googleFailed);
   }
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-10" style={{ background: "var(--gradient-hero)" }}>
       <Toaster richColors position="top-center" />
+      <div className="absolute right-4 top-4"><LanguageSwitcher variant="pill" /></div>
       <div className="w-full max-w-md rounded-3xl bg-card p-8 md:p-10" style={{ boxShadow: "var(--shadow-card)" }}>
         <Link to="/" className="mb-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
@@ -68,48 +72,48 @@ function SignupPage() {
           </span>
           Tintify
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Buat akun gratis</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Mulai analisis warna gigi Anda dalam 1 menit.</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t.auth.signupTitle}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t.auth.signupSubtitle}</p>
 
         <button onClick={handleGoogle} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-secondary">
-          <GoogleIcon /> Daftar dengan Google
+          <GoogleIcon /> {t.auth.signupGoogle}
         </button>
 
         <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-          <div className="h-px flex-1 bg-border" /> atau email <div className="h-px flex-1 bg-border" />
+          <div className="h-px flex-1 bg-border" /> {t.auth.orEmail} <div className="h-px flex-1 bg-border" />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
-          <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama lengkap" className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
-          <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+          <input required value={name} onChange={(e) => setName(e.target.value)} placeholder={t.auth.fullName} className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+          <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.auth.email} className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
 
           <div className="grid grid-cols-2 gap-3">
             <select required value={gender} onChange={(e) => setGender(e.target.value)} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary">
-              <option value="" disabled>Jenis kelamin</option>
-              <option value="laki-laki">Laki-laki</option>
-              <option value="perempuan">Perempuan</option>
-              <option value="lainnya">Lainnya</option>
+              <option value="" disabled>{t.auth.gender}</option>
+              <option value="laki-laki">{t.auth.male}</option>
+              <option value="perempuan">{t.auth.female}</option>
+              <option value="lainnya">{t.auth.other}</option>
             </select>
-            <input required type="number" min={5} max={120} value={age} onChange={(e) => setAge(e.target.value)} placeholder="Usia" className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+            <input required type="number" min={5} max={120} value={age} onChange={(e) => setAge(e.target.value)} placeholder={t.auth.age} className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
           </div>
 
           <div>
-            <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+            <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t.auth.password} className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
             <ul className="mt-2 space-y-1 text-[11px]">
-              <Check label="Minimal 8 karakter" ok={checks.length} />
-              <Check label="Mengandung huruf besar (A-Z)" ok={checks.upper} />
-              <Check label="Mengandung angka (0-9)" ok={checks.number} />
-              <Check label="Mengandung simbol (!@#$...)" ok={checks.symbol} />
+              <Check label={t.auth.pwReq.length} ok={checks.length} />
+              <Check label={t.auth.pwReq.upper} ok={checks.upper} />
+              <Check label={t.auth.pwReq.number} ok={checks.number} />
+              <Check label={t.auth.pwReq.symbol} ok={checks.symbol} />
             </ul>
           </div>
 
           <button disabled={loading} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60" style={{ background: "var(--gradient-primary)" }}>
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />} Buat akun
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />} {t.auth.createAccount}
           </button>
         </form>
 
         <p className="mt-5 text-center text-sm text-muted-foreground">
-          Sudah punya akun? <Link to="/login" className="font-medium text-primary hover:underline">Masuk</Link>
+          {t.auth.hasAccount} <Link to="/login" className="font-medium text-primary hover:underline">{t.common.login}</Link>
         </p>
       </div>
     </main>

@@ -1,94 +1,64 @@
 
-# Tintify — Overhaul Lengkap
+# Dual Language Support (Indonesian / English)
 
-Mengubah DentaShade menjadi **Tintify**: platform lengkap dengan auth, role-based dashboard, dan beberapa halaman AI sesuai mockup yang kamu kirim.
+Tambahkan dukungan dua bahasa di seluruh aplikasi. Default: **Bahasa Indonesia**. User bisa ganti ke **English** dari UI; pilihan ini juga otomatis dipakai oleh backend (AI insight, rekomendasi, risk analysis, error messages) sehingga respons AI ikut berubah bahasa.
 
-## 1. Branding & Warna VITA yang Akurat
+## 1. Infrastruktur i18n (Frontend)
 
-- Rename app ke **Tintify** (logo gigi ungu, font display ungu)
-- Palette ungu (gradient `#a855f7 → #6366f1`) menggantikan aqua
-- **Perbaiki hex warna VITA shade** berdasarkan foto VITA Classical asli yang kamu upload — warnanya lebih dingin/abu di B/C dan lebih kuning di A/D
-- Update `SHADE_COLORS` di tooth scan + `VITA_SHADES` di guide
+- Tambah library ringan `i18next` + `react-i18next` (atau implementasi context custom sederhana — saya akan pakai context custom agar bundle kecil dan SSR-friendly).
+- Buat `src/i18n/`:
+  - `LanguageProvider.tsx` — context + hook `useT()` + `useLanguage()`.
+  - `translations/id.ts` dan `translations/en.ts` — semua string aplikasi.
+  - Persist pilihan ke `localStorage` (`tintify_lang`) + cookie `lang` (agar bisa dibaca server function).
+- Pasang `LanguageProvider` di `src/routes/__root.tsx`.
 
-## 2. Authentication
+## 2. Language Switcher
 
-- Login & signup (email/password + Google)
-- Hanya user login yang bisa akses `/dashboard`, `/scan`, dst.
-- Halaman public: `/` (landing), `/login`, `/signup`, `/shades`
+- Komponen `LanguageSwitcher` (dropdown ID 🇮🇩 / EN 🇬🇧).
+- Tempatkan di:
+  - Navbar landing (`src/routes/index.tsx`)
+  - Header authenticated layout (`src/routes/_authenticated.tsx`)
+  - Login & signup page
 
-## 3. Roles (admin / user)
+## 3. Translasi Halaman (Frontend)
 
-Tabel `user_roles` (enum `app_role`) + helper `has_role()` (security definer).
-- User baru otomatis dapat role `user` via trigger
-- Admin di-promote manual via SQL
+Ganti semua string keras menjadi `t("key")`:
+- Landing (`index.tsx`)
+- Login, Signup
+- Dashboard, Scan, Shades, Habit Tracker, Risk Analysis, Recommendations, Profile
+- Sidebar (`app-sidebar.tsx`)
+- Error / 404 page di `__root.tsx`
 
-## 4. Halaman Baru / Diubah
+## 4. Backend (Server Functions + API Mobile)
 
-### Public
-- **`/` Landing page** — hero "Tintify: Tooth Color Intelligence Platform", Key Features (Smart Scan, Behavior Tracking, Risk Analysis, Recommendations), stats bar, 3-step flow, testimonial, footer
-- `/login`, `/signup`
-- `/shades` — sudah ada, refresh warnanya
+Bahasa dikirim dari client:
+- Server functions: ambil dari cookie `lang` via `getRequestHeader('cookie')`.
+- API mobile: terima header `Accept-Language` atau query `?lang=id|en` (default `id`).
 
-### Authenticated (layout sidebar)
-- **`/dashboard` (user)** — welcome, 3-step cards, metric cards (Current Shade, Risk Score, Active Streak, Next Scan), Tooth Color Progress chart (Recharts), Behavior Summary, Quick Actions, Recent Activity
-- **`/dashboard` (admin)** — beda: total users, total scans, distribusi shade, recent users, recent scans
-- **`/scan`** — 3 tab: Manual Selection (grid 16 shade), Upload Photo (drag & drop), Take Photo (kamera). Tombol "Analyze Shade" memanggil AI yang sudah ada. Sidebar tips.
-- **`/risk-analysis`** — current shade + skala VITA, AI-generated risk breakdown (high/moderate impact factors dari habits user), protective factors, CTA recommendations
-- **`/recommendations`** — AI-generated priority action plan berdasarkan risk profile (cards: target, current, action steps, progress), professional recs, educational resources, daily tip
-- **`/habit-tracker`** — daily log (brushing, flossing, mouthwash, coffee/tea/cigarettes count), activity heatmap 30 hari, stats, coffee chart 7 hari, achievements
-- **`/profile`** — info user, stats, settings (notif, dark mode), quick menu
+Update prompt AI di:
+- `src/lib/ai-insights.functions.ts` (risk analysis, habit insight, recommendations) — inject instruksi `Respond in {Indonesian|English}` ke system prompt.
+- `src/routes/api/mobile/risk-analysis.ts`
+- `src/routes/api/mobile/recommendations.generate.ts`
+- `src/routes/api/mobile/habit-insights.ts`
 
-## 5. Database
+Error messages dari API mobile juga dual language via helper `localizedError(lang, key)`.
 
-Tabel baru:
-- `profiles` (display_name, avatar_url, subscription)
-- `user_roles` (user_id, role) + enum + RLS
-- `tooth_scans` (user_id, shade, brightness, confidence, hygiene_score, summary, image_url, created_at)
-- `habit_logs` (user_id, date, brushing_morning, brushing_night, flossing, mouthwash, coffee_cups, tea_cups, cigarettes)
-- `recommendations` (user_id, title, category, target, current, status, ai_generated)
-- `achievements` (user_id, key, earned_at)
+## 5. Persistensi
 
-RLS: user hanya bisa lihat data sendiri; admin bisa lihat semua via `has_role(uid, 'admin')`.
+- `localStorage` untuk web.
+- Cookie `lang` (1 tahun, path=/) supaya server function ikut tahu pilihan user tanpa perlu argumen tambahan di setiap call.
+- Mobile API: client mobile kirim `Accept-Language: id` atau `en`.
 
-## 6. AI Integrations (Lovable AI Gateway)
+## Technical Notes
 
-Server functions baru:
-- `generateRiskAnalysis` — input: current shade + habit logs 30d → output structured risk factors + advice
-- `generateRecommendations` — input: risk profile + habits → output priority actions
-- `generateHabitInsights` — input: habit logs → output streak commentary + daily tip
+- Tidak ada perubahan schema DB.
+- Tidak perlu library tambahan — pakai context React + dictionary object (lebih cepat, no SSR hydration issue).
+- Tipe `Lang = 'id' | 'en'`.
+- Helper server: `getLangFromRequest(request)` → cek cookie lalu header `Accept-Language`, default `'id'`.
+- AI prompt: tambahkan satu baris di akhir system prompt: `"IMPORTANT: Tulis seluruh respons dalam Bahasa Indonesia."` atau `"IMPORTANT: Respond entirely in English."`.
 
-Pakai `google/gemini-2.5-flash` dengan tool calling (sama pola dengan `analyze-teeth`).
+## Out of Scope
 
-## 7. Design System
-
-- Primary ungu `oklch(0.62 0.22 295)`, gradient `from-primary to-indigo-500`
-- Font: **Outfit** (display) + **Inter** (body) — match vibe Tintify
-- Sidebar collapsible (shadcn `sidebar`)
-- Card style: rounded-2xl, soft shadow, white bg
-
-## 8. Urutan Eksekusi (1 turn besar)
-
-1. Migration DB (profiles, roles, scans, habits, recs, achievements + RLS + trigger handle_new_user)
-2. Konfigurasi Google auth
-3. Auth pages + AuthProvider hook
-4. Layout `_authenticated` dengan sidebar + role check
-5. Update styles.css (ungu)
-6. Landing page baru
-7. Dashboard user + admin (conditional render by role)
-8. Scan page (3-tab, simpan ke DB)
-9. Server functions AI (risk, rec, habit)
-10. Risk Analysis, Recommendations, Habit Tracker, Profile
-11. Perbaiki VITA hex di shades.tsx + SHADE_COLORS
-
-## Catatan
-
-- **Auto-confirm email**: TIDAK aktifkan kecuali kamu minta — user harus verifikasi email dulu
-- Mockup pakai banyak emoji icon kotak (kemungkinan font-loss screenshot) — saya pakai `lucide-react` setara
-- Achievements logic minimal dulu (hardcoded check); bisa di-extend nanti
-- Dark mode: toggle saja (tidak full themed dulu)
-
----
-
-**Konfirmasi sebelum mulai:**
-
-Ini pekerjaan besar (~15-20 file baru, 1 migration besar, ~30 menit eksekusi). Apakah saya lanjutkan **semua sekaligus** dengan plan ini, atau kamu ingin saya kerjakan **bertahap** (misal: tahap 1 = auth + landing + dashboard user; tahap 2 = scan multi-mode + VITA color fix; tahap 3 = AI risk/recommendations/habits; tahap 4 = admin dashboard)?
+- Tidak menambah bahasa ketiga.
+- Tidak menerjemahkan data dinamis user (catatan habit, dll.) — hanya UI + respons AI baru.
+- Riwayat risk analysis lama tetap dalam bahasa saat dibuat (tidak di-regenerate).

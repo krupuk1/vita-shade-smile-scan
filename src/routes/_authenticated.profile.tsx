@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useT, useLang } from "@/i18n/LanguageProvider";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/_authenticated/profile")({
 
 function ProfilePage() {
   const { user, signOut } = useAuth();
+  const t = useT();
+  const { lang } = useLang();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState("");
@@ -47,7 +50,7 @@ function ProfilePage() {
         totalScans: scanCount ?? 0,
         habitsTracked: habitCount ?? 0,
         daysActive,
-        memberSince: user?.created_at ? new Date(user.created_at).toLocaleDateString("id-ID", { month: "long", year: "numeric" }) : "—",
+        memberSince: user?.created_at ? new Date(user.created_at).toLocaleDateString(lang === "en" ? "en-US" : "id-ID", { month: "long", year: "numeric" }) : "—",
       };
     },
     enabled: !!user,
@@ -65,7 +68,7 @@ function ProfilePage() {
       }, { onConflict: "user_id" });
       if (error) throw error;
     },
-    onSuccess: () => { toast.success("Profil disimpan"); qc.invalidateQueries({ queryKey: ["profile"] }); },
+    onSuccess: () => { toast.success(t.profile.profileSaved); qc.invalidateQueries({ queryKey: ["profile"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -83,14 +86,14 @@ function ProfilePage() {
       if (error) throw error;
       return avatar_url;
     },
-    onSuccess: () => { toast.success("Foto profil diperbarui"); qc.invalidateQueries({ queryKey: ["profile"] }); },
+    onSuccess: () => { toast.success(t.profile.avatarUpdated); qc.invalidateQueries({ queryKey: ["profile"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
 
   async function handleLogout() {
     await signOut();
-    toast.success("Anda telah keluar");
+    toast.success(t.auth.signedOut);
     navigate({ to: "/" });
   }
 

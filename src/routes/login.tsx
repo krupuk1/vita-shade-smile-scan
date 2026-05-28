@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { useT } from "@/i18n/LanguageProvider";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -13,6 +15,7 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
+  const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,18 +26,19 @@ function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Selamat datang kembali!");
+    toast.success(t.auth.welcomeBack);
     navigate({ to: "/dashboard" });
   }
 
   async function handleGoogle() {
     const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/dashboard" });
-    if (result.error) toast.error("Login Google gagal");
+    if (result.error) toast.error(t.auth.googleFailed);
   }
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4" style={{ background: "var(--gradient-hero)" }}>
       <Toaster richColors position="top-center" />
+      <div className="absolute right-4 top-4"><LanguageSwitcher variant="pill" /></div>
       <div className="w-full max-w-md rounded-3xl bg-card p-8 md:p-10" style={{ boxShadow: "var(--shadow-card)" }}>
         <Link to="/" className="mb-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
@@ -42,27 +46,27 @@ function LoginPage() {
           </span>
           Tintify
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Masuk ke akun Anda</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Lanjutkan analisis gigi & habit tracker Anda.</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t.auth.loginTitle}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t.auth.loginSubtitle}</p>
 
         <button onClick={handleGoogle} className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-secondary">
-          <GoogleIcon /> Lanjut dengan Google
+          <GoogleIcon /> {t.auth.continueGoogle}
         </button>
 
         <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-          <div className="h-px flex-1 bg-border" /> atau email <div className="h-px flex-1 bg-border" />
+          <div className="h-px flex-1 bg-border" /> {t.auth.orEmail} <div className="h-px flex-1 bg-border" />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
-          <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
-          <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+          <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t.auth.email} className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
+          <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t.auth.password} className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary" />
           <button disabled={loading} type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60" style={{ background: "var(--gradient-primary)" }}>
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />} Masuk
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />} {t.common.login}
           </button>
         </form>
 
         <p className="mt-5 text-center text-sm text-muted-foreground">
-          Belum punya akun? <Link to="/signup" className="font-medium text-primary hover:underline">Daftar</Link>
+          {t.auth.noAccount} <Link to="/signup" className="font-medium text-primary hover:underline">{t.common.signup}</Link>
         </p>
       </div>
     </main>

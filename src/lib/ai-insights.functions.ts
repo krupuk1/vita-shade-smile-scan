@@ -1,6 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { aiChatCompletions } from "@/lib/ai-provider.server";
+import { langFromCookieHeader, aiLanguageInstruction } from "@/i18n/lang.server";
+
+function getLang() {
+  try { return langFromCookieHeader(getRequestHeader("cookie") ?? null); } catch { return "id" as const; }
+}
 
 export interface RiskCriterion { label: string; score: number; weight: number; finding: string; }
 export interface RiskItem {
@@ -31,17 +37,19 @@ export interface Recommendation {
 }
 
 async function callAI(systemPrompt: string, userPrompt: string, toolName: string, schema: any) {
+  const lang = getLang();
+  const sysWithLang = `${systemPrompt}\n\n${aiLanguageInstruction(lang)}`;
   const res = await aiChatCompletions({
     messages: [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: sysWithLang },
       { role: "user", content: userPrompt },
     ],
-    tools: [{ type: "function", function: { name: toolName, description: "Laporkan hasil", parameters: schema } }],
+    tools: [{ type: "function", function: { name: toolName, description: "Report result", parameters: schema } }],
     tool_choice: { type: "function", function: { name: toolName } },
   });
   if (!res.ok) {
-    if (res.status === 429) throw new Error("Rate limit. Coba lagi sebentar.");
-    if (res.status === 402) throw new Error("Kredit AI habis.");
+    if (res.status === 429) throw new Error(lang === "en" ? "Rate limited. Try again shortly." : "Rate limit. Coba lagi sebentar.");
+    if (res.status === 402) throw new Error(lang === "en" ? "AI credits exhausted." : "Kredit AI habis.");
     throw new Error("AI gateway error");
   }
   const json = await res.json();
