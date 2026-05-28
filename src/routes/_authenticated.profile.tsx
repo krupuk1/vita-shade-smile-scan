@@ -50,7 +50,7 @@ function ProfilePage() {
         totalScans: scanCount ?? 0,
         habitsTracked: habitCount ?? 0,
         daysActive,
-        memberSince: user?.created_at ? new Date(user.created_at).toLocaleDateString("id-ID", { month: "long", year: "numeric" }) : "—",
+        memberSince: user?.created_at ? new Date(user.created_at).toLocaleDateString(lang === "en" ? "en-US" : "id-ID", { month: "long", year: "numeric" }) : "—",
       };
     },
     enabled: !!user,
