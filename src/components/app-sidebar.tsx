@@ -5,6 +5,7 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/use-auth";
+import { useT } from "@/i18n/LanguageProvider";
 import { toast } from "sonner";
 
 export function AppSidebar() {
@@ -13,20 +14,21 @@ export function AppSidebar() {
   const path = useRouterState({ select: (r) => r.location.pathname });
   const { isAdmin, signOut, user } = useAuth();
   const navigate = useNavigate();
+  const t = useT();
 
   const items = [
-    { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-    { title: "Tooth Scan", url: "/scan", icon: Camera },
-    { title: "Risk Analysis", url: "/risk-analysis", icon: Activity },
-    { title: "Recommendations", url: "/recommendations", icon: Sparkles },
-    { title: "Habit Tracker", url: "/habit-tracker", icon: ListChecks },
-    { title: "VITA Shades", url: "/shades" as const, icon: Palette },
-    { title: "Profile", url: "/profile", icon: User },
+    { title: t.sidebar.dashboard, url: "/dashboard", icon: LayoutDashboard },
+    { title: t.sidebar.scan, url: "/scan", icon: Camera },
+    { title: t.sidebar.risk, url: "/risk-analysis", icon: Activity },
+    { title: t.sidebar.recommendations, url: "/recommendations", icon: Sparkles },
+    { title: t.sidebar.habits, url: "/habit-tracker", icon: ListChecks },
+    { title: t.sidebar.shades, url: "/shades" as const, icon: Palette },
+    { title: t.sidebar.profile, url: "/profile", icon: User },
   ];
 
   async function handleSignOut() {
     await signOut();
-    toast.success("Anda telah keluar");
+    toast.success(t.auth.signedOut);
     navigate({ to: "/" });
   }
 
@@ -43,7 +45,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>{t.sidebar.menu}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -62,14 +64,14 @@ export function AppSidebar() {
 
         {isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupLabel>{t.sidebar.admin}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={path.startsWith("/admin")}>
                     <a href="/admin" className="flex items-center gap-2">
                       <Shield className="h-4 w-4" />
-                      {!collapsed && <span>Admin Panel</span>}
+                      {!collapsed && <span>{t.sidebar.adminPanel}</span>}
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -87,7 +89,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
-              {!collapsed && <span>Keluar</span>}
+              {!collapsed && <span>{t.common.logout}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
