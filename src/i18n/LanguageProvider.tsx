@@ -44,7 +44,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const value: Ctx = {
     lang,
     setLang: setLangState,
-    t: translations[lang],
+    t: translations[lang] as unknown as Dict,
   };
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
