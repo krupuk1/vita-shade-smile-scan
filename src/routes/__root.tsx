@@ -133,8 +133,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthSync />
-      <Outlet />
+      <LanguageProvider>
+        <AuthSync />
+        <Outlet />
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
