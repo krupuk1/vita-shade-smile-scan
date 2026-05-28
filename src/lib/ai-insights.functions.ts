@@ -1,6 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { aiChatCompletions } from "@/lib/ai-provider.server";
+import { langFromCookieHeader, aiLanguageInstruction } from "@/i18n/lang.server";
+
+function getLang() {
+  try { return langFromCookieHeader(getRequestHeader("cookie") ?? null); } catch { return "id" as const; }
+}
 
 export interface RiskCriterion { label: string; score: number; weight: number; finding: string; }
 export interface RiskItem {
