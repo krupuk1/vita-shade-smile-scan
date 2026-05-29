@@ -142,7 +142,7 @@ function Dashboard() {
 
       {/* Quick stats */}
       <div className="mt-6 grid gap-4 md:grid-cols-4">
-        <ShadeStatCard shade={lastScan?.primary_shade ?? null} t={t} />
+        <ShadeStatCard shade={lastScan?.primary_shade ?? null} />
         <StatCard label={t.dashboard.totalScan} value={scans?.length ?? 0} icon={Camera} />
         <StatCard label={t.dashboard.hygiene} value={lastScan?.hygiene_score ? `${Math.round(Number(lastScan.hygiene_score))}/100` : "—"} icon={Activity} />
         <StatCard label={t.dashboard.habitLog7} value={habits?.length ?? 0} icon={ListChecks} />
