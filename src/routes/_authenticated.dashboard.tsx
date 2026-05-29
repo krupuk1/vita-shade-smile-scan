@@ -128,24 +128,24 @@ function Dashboard() {
       {/* Welcome hero */}
       <div className="rounded-3xl p-7 text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
         <h1 className="text-2xl md:text-3xl font-semibold">
-          Halo, {user?.user_metadata?.display_name || user?.email?.split("@")[0]} 👋
+          {t.dashboard.hello}, {user?.user_metadata?.display_name || user?.email?.split("@")[0]} 👋
         </h1>
-        <p className="mt-1 text-sm opacity-90">{isAdmin ? "Mode admin aktif." : "Lanjutkan perjalanan Anda menuju gigi yang lebih sehat."}</p>
+        <p className="mt-1 text-sm opacity-90">{isAdmin ? t.dashboard.adminMode : t.dashboard.welcome}</p>
       </div>
 
       {/* Steps */}
       <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <StepCard n={1} title="Scan Gigi" desc="Scan warna gigi via kamera atau pilih manual." to="/scan" />
-        <StepCard n={2} title="Log Kebiasaan" desc="Catat kopi, teh, rokok, dan rutinitas sikat gigi." to="/habit-tracker" />
-        <StepCard n={3} title="Lihat Analisis" desc="Risk analysis & rekomendasi personal AI." to="/risk-analysis" />
+        <StepCard n={1} title={t.dashboard.step1Title} desc={t.dashboard.step1Desc} to="/scan" />
+        <StepCard n={2} title={t.dashboard.step2Title} desc={t.dashboard.step2Desc} to="/habit-tracker" />
+        <StepCard n={3} title={t.dashboard.step3Title} desc={t.dashboard.step3Desc} to="/risk-analysis" />
       </div>
 
       {/* Quick stats */}
       <div className="mt-6 grid gap-4 md:grid-cols-4">
-        <ShadeStatCard shade={lastScan?.primary_shade ?? null} />
-        <StatCard label="Total Scan" value={scans?.length ?? 0} icon={Camera} />
-        <StatCard label="Hygiene Score" value={lastScan?.hygiene_score ? `${Math.round(Number(lastScan.hygiene_score))}/100` : "—"} icon={Activity} />
-        <StatCard label="Log Habit (7H)" value={habits?.length ?? 0} icon={ListChecks} />
+        <ShadeStatCard shade={lastScan?.primary_shade ?? null} t={t} />
+        <StatCard label={t.dashboard.totalScan} value={scans?.length ?? 0} icon={Camera} />
+        <StatCard label={t.dashboard.hygiene} value={lastScan?.hygiene_score ? `${Math.round(Number(lastScan.hygiene_score))}/100` : "—"} icon={Activity} />
+        <StatCard label={t.dashboard.habitLog7} value={habits?.length ?? 0} icon={ListChecks} />
       </div>
 
       {/* Chart + Behavior */}
