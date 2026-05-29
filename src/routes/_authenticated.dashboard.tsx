@@ -118,9 +118,9 @@ function Dashboard() {
   }, [habits]);
 
   function level(v: number, hi: number, mid: number): { label: string; cls: string } {
-    if (v >= hi) return { label: "High", cls: "bg-red-100 text-red-600" };
-    if (v >= mid) return { label: "Moderate", cls: "bg-amber-100 text-amber-700" };
-    return { label: "Good", cls: "bg-emerald-100 text-emerald-700" };
+    if (v >= hi) return { label: t.dashboard.level.high, cls: "bg-red-100 text-red-600" };
+    if (v >= mid) return { label: t.dashboard.level.moderate, cls: "bg-amber-100 text-amber-700" };
+    return { label: t.dashboard.level.good, cls: "bg-emerald-100 text-emerald-700" };
   }
 
   return (
