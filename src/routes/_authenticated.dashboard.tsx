@@ -6,6 +6,7 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceL
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { useLang, useT } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
