@@ -78,7 +78,7 @@ function Dashboard() {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       months.push({
         key: `${d.getFullYear()}-${d.getMonth()}`,
-        label: d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" }),
+        label: d.toLocaleDateString(locale, { month: "short", year: "2-digit" }),
         date: d,
       });
     }
