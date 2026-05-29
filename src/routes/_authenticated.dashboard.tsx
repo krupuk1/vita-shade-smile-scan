@@ -156,7 +156,7 @@ function Dashboard() {
               <h2 className="text-lg font-semibold text-foreground">{t.dashboard.progress}</h2>
               <p className="text-xs text-muted-foreground">{t.dashboard.progressSub}</p>
             </div>
-            <ShadeLegendButton t={t} />
+            <ShadeLegendButton />
           </div>
           <div className="mt-4 h-64">
             {hasShadeData ? (
