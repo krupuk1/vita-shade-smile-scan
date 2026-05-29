@@ -64,10 +64,25 @@ export const updateAiSettings = createServerFn({ method: "POST" })
       patch.api_key = data.api_key.trim();
     }
 
-    const { error } = await supabase
+    // Check if row exists; insert if not, update if yes (singleton pattern).
+    const { data: existing } = await supabase
       .from("ai_provider_settings")
-      .update(patch)
-      .eq("singleton", true);
-    if (error) throw new Error(error.message);
+      .select("id")
+      .eq("singleton", true)
+      .maybeSingle();
+
+    if (existing) {
+      const { error } = await supabase
+        .from("ai_provider_settings")
+        .update(patch)
+        .eq("singleton", true);
+      if (error) throw new Error(error.message);
+    } else {
+      const insertRow = { ...patch, singleton: true, api_key: patch.api_key ?? null };
+      const { error } = await supabase
+        .from("ai_provider_settings")
+        .insert(insertRow);
+      if (error) throw new Error(error.message);
+    }
     return { ok: true };
   });

@@ -6,6 +6,7 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, ReferenceL
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { useLang, useT } from "@/i18n/LanguageProvider";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -44,6 +45,9 @@ function shadeIndex(s: string) {
 
 function Dashboard() {
   const { user, isAdmin } = useAuth();
+  const t = useT();
+  const { lang } = useLang();
+  const locale = lang === "en" ? "en-US" : "id-ID";
 
   const { data: scans } = useQuery({
     queryKey: ["my-scans", user?.id],
@@ -74,7 +78,7 @@ function Dashboard() {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       months.push({
         key: `${d.getFullYear()}-${d.getMonth()}`,
-        label: d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" }),
+        label: d.toLocaleDateString(locale, { month: "short", year: "2-digit" }),
         date: d,
       });
     }
@@ -114,9 +118,9 @@ function Dashboard() {
   }, [habits]);
 
   function level(v: number, hi: number, mid: number): { label: string; cls: string } {
-    if (v >= hi) return { label: "High", cls: "bg-red-100 text-red-600" };
-    if (v >= mid) return { label: "Moderate", cls: "bg-amber-100 text-amber-700" };
-    return { label: "Good", cls: "bg-emerald-100 text-emerald-700" };
+    if (v >= hi) return { label: t.dashboard.level.high, cls: "bg-red-100 text-red-600" };
+    if (v >= mid) return { label: t.dashboard.level.moderate, cls: "bg-amber-100 text-amber-700" };
+    return { label: t.dashboard.level.good, cls: "bg-emerald-100 text-emerald-700" };
   }
 
   return (
@@ -124,24 +128,24 @@ function Dashboard() {
       {/* Welcome hero */}
       <div className="rounded-3xl p-7 text-primary-foreground" style={{ background: "var(--gradient-primary)" }}>
         <h1 className="text-2xl md:text-3xl font-semibold">
-          Halo, {user?.user_metadata?.display_name || user?.email?.split("@")[0]} 👋
+          {t.dashboard.hello}, {user?.user_metadata?.display_name || user?.email?.split("@")[0]} 👋
         </h1>
-        <p className="mt-1 text-sm opacity-90">{isAdmin ? "Mode admin aktif." : "Lanjutkan perjalanan Anda menuju gigi yang lebih sehat."}</p>
+        <p className="mt-1 text-sm opacity-90">{isAdmin ? t.dashboard.adminMode : t.dashboard.welcome}</p>
       </div>
 
       {/* Steps */}
       <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <StepCard n={1} title="Scan Gigi" desc="Scan warna gigi via kamera atau pilih manual." to="/scan" />
-        <StepCard n={2} title="Log Kebiasaan" desc="Catat kopi, teh, rokok, dan rutinitas sikat gigi." to="/habit-tracker" />
-        <StepCard n={3} title="Lihat Analisis" desc="Risk analysis & rekomendasi personal AI." to="/risk-analysis" />
+        <StepCard n={1} title={t.dashboard.step1Title} desc={t.dashboard.step1Desc} to="/scan" />
+        <StepCard n={2} title={t.dashboard.step2Title} desc={t.dashboard.step2Desc} to="/habit-tracker" />
+        <StepCard n={3} title={t.dashboard.step3Title} desc={t.dashboard.step3Desc} to="/risk-analysis" />
       </div>
 
       {/* Quick stats */}
       <div className="mt-6 grid gap-4 md:grid-cols-4">
         <ShadeStatCard shade={lastScan?.primary_shade ?? null} />
-        <StatCard label="Total Scan" value={scans?.length ?? 0} icon={Camera} />
-        <StatCard label="Hygiene Score" value={lastScan?.hygiene_score ? `${Math.round(Number(lastScan.hygiene_score))}/100` : "—"} icon={Activity} />
-        <StatCard label="Log Habit (7H)" value={habits?.length ?? 0} icon={ListChecks} />
+        <StatCard label={t.dashboard.totalScan} value={scans?.length ?? 0} icon={Camera} />
+        <StatCard label={t.dashboard.hygiene} value={lastScan?.hygiene_score ? `${Math.round(Number(lastScan.hygiene_score))}/100` : "—"} icon={Activity} />
+        <StatCard label={t.dashboard.habitLog7} value={habits?.length ?? 0} icon={ListChecks} />
       </div>
 
       {/* Chart + Behavior */}
@@ -149,8 +153,8 @@ function Dashboard() {
         <div className="rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Tooth Color Progress</h2>
-              <p className="text-xs text-muted-foreground">6 bulan terakhir — lebih rendah = lebih putih</p>
+              <h2 className="text-lg font-semibold text-foreground">{t.dashboard.progress}</h2>
+              <p className="text-xs text-muted-foreground">{t.dashboard.progressSub}</p>
             </div>
             <ShadeLegendButton />
           </div>
@@ -192,7 +196,7 @@ function Dashboard() {
                               <p className="text-sm font-semibold text-foreground">Shade {shadeLabel}</p>
                             </div>
                             <p className="mt-0.5 text-[11px] text-muted-foreground">{SHADE_DESC[shadeLabel] ?? ""}</p>
-                            <p className="mt-0.5 text-[10px] text-muted-foreground">{p?.payload?.count} scan bulan ini</p>
+                            <p className="mt-0.5 text-[10px] text-muted-foreground">{p?.payload?.count} {t.dashboard.scanCount}</p>
                           </div>
                         );
                       }
@@ -200,7 +204,7 @@ function Dashboard() {
                     }}
                   />
                   <ReferenceLine y={1} stroke="var(--primary)" strokeDasharray="6 4" strokeOpacity={0.4}
-                    label={{ value: "Goal A2", position: "insideTopRight", fontSize: 10, fill: "var(--primary)", dy: -4 }} />
+                    label={{ value: t.dashboard.goalA2, position: "insideTopRight", fontSize: 10, fill: "var(--primary)", dy: -4 }} />
                   <Area
                     type="monotone"
                     dataKey="shade"
