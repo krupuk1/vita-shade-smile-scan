@@ -196,7 +196,7 @@ function Dashboard() {
                               <p className="text-sm font-semibold text-foreground">Shade {shadeLabel}</p>
                             </div>
                             <p className="mt-0.5 text-[11px] text-muted-foreground">{SHADE_DESC[shadeLabel] ?? ""}</p>
-                            <p className="mt-0.5 text-[10px] text-muted-foreground">{p?.payload?.count} scan bulan ini</p>
+                            <p className="mt-0.5 text-[10px] text-muted-foreground">{p?.payload?.count} {t.dashboard.scanCount}</p>
                           </div>
                         );
                       }
@@ -204,7 +204,7 @@ function Dashboard() {
                     }}
                   />
                   <ReferenceLine y={1} stroke="var(--primary)" strokeDasharray="6 4" strokeOpacity={0.4}
-                    label={{ value: "Goal A2", position: "insideTopRight", fontSize: 10, fill: "var(--primary)", dy: -4 }} />
+                    label={{ value: t.dashboard.goalA2, position: "insideTopRight", fontSize: 10, fill: "var(--primary)", dy: -4 }} />
                   <Area
                     type="monotone"
                     dataKey="shade"
