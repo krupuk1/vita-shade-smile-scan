@@ -153,10 +153,10 @@ function Dashboard() {
         <div className="rounded-3xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Tooth Color Progress</h2>
-              <p className="text-xs text-muted-foreground">6 bulan terakhir — lebih rendah = lebih putih</p>
+              <h2 className="text-lg font-semibold text-foreground">{t.dashboard.progress}</h2>
+              <p className="text-xs text-muted-foreground">{t.dashboard.progressSub}</p>
             </div>
-            <ShadeLegendButton />
+            <ShadeLegendButton t={t} />
           </div>
           <div className="mt-4 h-64">
             {hasShadeData ? (
