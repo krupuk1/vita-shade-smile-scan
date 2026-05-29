@@ -45,6 +45,9 @@ function shadeIndex(s: string) {
 
 function Dashboard() {
   const { user, isAdmin } = useAuth();
+  const t = useT();
+  const { lang } = useLang();
+  const locale = lang === "en" ? "en-US" : "id-ID";
 
   const { data: scans } = useQuery({
     queryKey: ["my-scans", user?.id],
