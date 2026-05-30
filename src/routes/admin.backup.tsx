@@ -35,7 +35,11 @@ function AdminBackup() {
       a.download = `tintify-backup-${stamp}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      setLastExport({ counts: res.meta.counts, exported_at: res.meta.exported_at });
+      const counts: Record<string, number> = {};
+      for (const [t, rows] of Object.entries(res.tables ?? {})) {
+        counts[t] = Array.isArray(rows) ? rows.length : 0;
+      }
+      setLastExport({ counts, exported_at: res.created_at ?? new Date().toISOString() });
       toast.success("Backup berhasil diunduh");
     } catch (e: any) {
       toast.error(e?.message || "Export gagal");
@@ -48,11 +52,12 @@ function AdminBackup() {
     try {
       const text = await file.text();
       const payload = JSON.parse(text);
-      if (!payload?.data || typeof payload.data !== "object") {
+      const tables = payload?.tables ?? payload?.data;
+      if (!tables || typeof tables !== "object") {
         throw new Error("Format file backup tidak valid");
       }
       const counts: Record<string, number> = {};
-      for (const [t, rows] of Object.entries(payload.data)) {
+      for (const [t, rows] of Object.entries(tables)) {
         counts[t] = Array.isArray(rows) ? rows.length : 0;
       }
       setPendingFile({ name: file.name, payload, counts });
@@ -61,6 +66,7 @@ function AdminBackup() {
       toast.error(e?.message || "File tidak valid");
     }
   }
+
 
   async function handleImport() {
     if (!pendingFile) return;
