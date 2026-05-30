@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Shield, LayoutDashboard, Users, Camera, Sparkles, ArrowLeft, LogOut, FileText, Settings, Code2, Palette } from "lucide-react";
+import { Shield, LayoutDashboard, Users, Camera, Sparkles, ArrowLeft, LogOut, FileText, Settings, Code2, Palette, Database } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
@@ -26,6 +26,7 @@ export function AdminSidebar() {
   ];
   const system = [
     { title: "API Docs", url: "/admin/api-docs", icon: Code2 },
+    { title: "Backup & Restore", url: "/admin/backup", icon: Database },
     { title: "Settings", url: "/admin/settings", icon: Settings },
   ];
 
