@@ -26,33 +26,41 @@ export const exportDatabase = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
 
-    const data: Record<string, any[]> = {};
-    const counts: Record<string, number> = {};
+    const tables: Record<string, any[]> = {};
     for (const t of TABLES) {
       const { data: rows, error } = await supabaseAdmin.from(t).select("*");
       if (error) throw new Error(`${t}: ${error.message}`);
-      data[t] = rows ?? [];
-      counts[t] = (rows ?? []).length;
+      tables[t] = rows ?? [];
     }
 
     return {
-      meta: {
-        version: 1,
-        exported_at: new Date().toISOString(),
-        tables: TABLES,
-        counts,
-      },
-      data,
+      version: "1.0",
+      created_at: new Date().toISOString(),
+      source: "tintify-admin-backup",
+      tables,
     };
   });
+
+// Accept both new format ({version, tables}) and legacy ({meta, data}).
+function extractTables(payload: any): Record<string, any[]> {
+  if (payload?.tables && typeof payload.tables === "object" && !Array.isArray(payload.tables)) {
+    return payload.tables;
+  }
+  if (payload?.data && typeof payload.data === "object") {
+    return payload.data;
+  }
+  throw new Error("Invalid backup payload: missing 'tables'");
+}
 
 export const importDatabase = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (input: { payload: { meta?: any; data: Record<string, any[]> }; mode: "merge" | "replace" }) => {
-      if (!input?.payload?.data || typeof input.payload.data !== "object") {
+    (input: { payload: any; mode: "merge" | "replace" }) => {
+      if (!input?.payload || typeof input.payload !== "object") {
         throw new Error("Invalid backup payload");
       }
+      // Validate shape early
+      extractTables(input.payload);
       if (input.mode !== "merge" && input.mode !== "replace") {
         throw new Error("Invalid mode");
       }
@@ -62,9 +70,9 @@ export const importDatabase = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
 
+    const tables = extractTables(data.payload);
     const result: Record<string, { inserted: number; skipped: number }> = {};
 
-    // For replace mode, delete in reverse dependency order (children first).
     if (data.mode === "replace") {
       for (const t of [...TABLES].reverse()) {
         const { error } = await supabaseAdmin.from(t).delete().not("id", "is", null);
@@ -73,12 +81,11 @@ export const importDatabase = createServerFn({ method: "POST" })
     }
 
     for (const t of TABLES) {
-      const rows = (data.payload.data as Record<string, any[]>)[t];
+      const rows = tables[t];
       if (!Array.isArray(rows) || rows.length === 0) {
         result[t] = { inserted: 0, skipped: 0 };
         continue;
       }
-      // Chunk to avoid payload limits
       const chunkSize = 500;
       let inserted = 0;
       for (let i = 0; i < rows.length; i += chunkSize) {
