@@ -20,6 +20,7 @@ import { Route as AdminShadesRouteImport } from './routes/admin.shades'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminScansRouteImport } from './routes/admin.scans'
 import { Route as AdminRecommendationsRouteImport } from './routes/admin.recommendations'
+import { Route as AdminBackupRouteImport } from './routes/admin.backup'
 import { Route as AdminArticlesRouteImport } from './routes/admin.articles'
 import { Route as AdminApiDocsRouteImport } from './routes/admin.api-docs'
 import { Route as AuthenticatedShadesRouteImport } from './routes/_authenticated.shades'
@@ -94,6 +95,11 @@ const AdminScansRoute = AdminScansRouteImport.update({
 const AdminRecommendationsRoute = AdminRecommendationsRouteImport.update({
   id: '/recommendations',
   path: '/recommendations',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBackupRoute = AdminBackupRouteImport.update({
+  id: '/backup',
+  path: '/backup',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminArticlesRoute = AdminArticlesRouteImport.update({
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/shades': typeof AuthenticatedShadesRoute
   '/admin/api-docs': typeof AdminApiDocsRoute
   '/admin/articles': typeof AdminArticlesRoute
+  '/admin/backup': typeof AdminBackupRoute
   '/admin/recommendations': typeof AdminRecommendationsRoute
   '/admin/scans': typeof AdminScansRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -253,6 +260,7 @@ export interface FileRoutesByTo {
   '/shades': typeof AuthenticatedShadesRoute
   '/admin/api-docs': typeof AdminApiDocsRoute
   '/admin/articles': typeof AdminArticlesRoute
+  '/admin/backup': typeof AdminBackupRoute
   '/admin/recommendations': typeof AdminRecommendationsRoute
   '/admin/scans': typeof AdminScansRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/_authenticated/shades': typeof AuthenticatedShadesRoute
   '/admin/api-docs': typeof AdminApiDocsRoute
   '/admin/articles': typeof AdminArticlesRoute
+  '/admin/backup': typeof AdminBackupRoute
   '/admin/recommendations': typeof AdminRecommendationsRoute
   '/admin/scans': typeof AdminScansRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -323,6 +332,7 @@ export interface FileRouteTypes {
     | '/shades'
     | '/admin/api-docs'
     | '/admin/articles'
+    | '/admin/backup'
     | '/admin/recommendations'
     | '/admin/scans'
     | '/admin/settings'
@@ -355,6 +365,7 @@ export interface FileRouteTypes {
     | '/shades'
     | '/admin/api-docs'
     | '/admin/articles'
+    | '/admin/backup'
     | '/admin/recommendations'
     | '/admin/scans'
     | '/admin/settings'
@@ -389,6 +400,7 @@ export interface FileRouteTypes {
     | '/_authenticated/shades'
     | '/admin/api-docs'
     | '/admin/articles'
+    | '/admin/backup'
     | '/admin/recommendations'
     | '/admin/scans'
     | '/admin/settings'
@@ -505,6 +517,13 @@ declare module '@tanstack/react-router' {
       path: '/recommendations'
       fullPath: '/admin/recommendations'
       preLoaderRoute: typeof AdminRecommendationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/backup': {
+      id: '/admin/backup'
+      path: '/backup'
+      fullPath: '/admin/backup'
+      preLoaderRoute: typeof AdminBackupRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/articles': {
@@ -684,6 +703,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 interface AdminRouteChildren {
   AdminApiDocsRoute: typeof AdminApiDocsRoute
   AdminArticlesRoute: typeof AdminArticlesRoute
+  AdminBackupRoute: typeof AdminBackupRoute
   AdminRecommendationsRoute: typeof AdminRecommendationsRoute
   AdminScansRoute: typeof AdminScansRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
@@ -695,6 +715,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminApiDocsRoute: AdminApiDocsRoute,
   AdminArticlesRoute: AdminArticlesRoute,
+  AdminBackupRoute: AdminBackupRoute,
   AdminRecommendationsRoute: AdminRecommendationsRoute,
   AdminScansRoute: AdminScansRoute,
   AdminSettingsRoute: AdminSettingsRoute,
